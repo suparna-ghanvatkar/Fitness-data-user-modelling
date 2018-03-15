@@ -22,3 +22,19 @@ user_duration = time_user_raw.groupby('user').agg({'time':[min,max]})
 user_duration.columns = ["_".join(x) for x in user_duration.columns.ravel()]
 user_duration['duration'] = user_duration['time_max'] - user_duration['time_min']
 user_duration.sort_values(by='duration')
+
+labelled_act = os.path.join(datadir,'WISDM_at_v2.0_transformed.csv')
+labelled_raw = os.path.join(datadir, 'WISDM_at_v2.0_raw.txt')
+lraw_data = pd.read_csv(labelled_raw, header=None, names = raw_headers)
+lact_data = pd.read_csv(labelled_act, header=None, names = act_headers)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
+
+user_act_data = act_data.loc[act_data['user']==194]['Activity']
+prev = user_act_data[0]
+for i,activity in user_act_data.iteritems():
+    if activity!= prev:
+        print "Transition from",prev," to ",activity
+    prev = activity
+    
+    
+#number of instances of each user
+user_inst = act_data.groupby('user').count()['Activity']
