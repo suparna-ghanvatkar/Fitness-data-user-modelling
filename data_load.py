@@ -30,6 +30,8 @@ lact_data = pd.read_csv(labelled_act, header=None, names = act_headers)
 
 user_act_data = act_data.loc[act_data['user']==194]['Activity']
 prev = user_act_data[0]
+walk_dur, jog_dur, stand_dur, sit_dur, stair_dur, ly_dur, no_tx, walk_jog, walk_sit, sit_walk = 0
+feat = [walk_dur, jog_dur, stand_dur, sit_dur, stair_dur, ly_dur, no_tx, walk_jog, walk_sit, sit_walk]
 for i,activity in user_act_data.iteritems():
     if activity!= prev:
         print "Transition from",prev," to ",activity
