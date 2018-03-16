@@ -14,19 +14,26 @@ unlabelled_act = os.path.join(datadir,'WISDM_at_v2.0_unlabeled_transformed.csv')
 unlabelled_raw = os.path.join(datadir, 'WISDM_at_v2.0_unlabeled_raw.txt')
 raw_headers = ['user','activity','time','x','y','z']
 act_headers = ['user','X0','X1','X2','X3','X4','X5','X6','X7','X8','X9','Y0','Y1','Y2','Y3','Y4','Y5','Y6','Y7','Y8','Y9','Z0','Z1','Z2','Z3','Z4','Z5','Z6','Z7','Z8','Z9','XAVG','YAVG','ZAVG','XPEAK','YPEAK','ZPEAK','XABSOLDEV', 'YABSOLDEV','ZABSOLDEV','XSTANDDEV','YSTANDDEV','ZSTANDDEV','Resultant','Activity']
-raw_data = pd.read_csv(unlabelled_raw, header=None, names = raw_headers)
-act_data = pd.read_csv(unlabelled_act, header=None, names = act_headers)
+#raw_data = pd.read_csv(unlabelled_raw, header=None, names = raw_headers)
+#act_data = pd.read_csv(unlabelled_act, header=None, names = act_headers)
 
+labelled_act = os.path.join(datadir,'WISDM_at_v2.0_transformed.csv')
+labelled_raw = os.path.join(datadir, 'WISDM_at_v2.0_raw.txt')
+raw_data = pd.read_csv(labelled_raw, header=None, names = raw_headers, parse_dates=True)
+raw_data = raw_data.loc[raw_data['time']>0]
+#raw_data['time'] = raw_data['time'].astype(np.int64)
+raw_data['time'] = pd.to_datetime(raw_data['time'], unit = 'ms', errors='coerce')
+act_data = pd.read_csv(labelled_act, header=None, names = act_headers)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
+
+#data duration for every user 
 time_user_raw = raw_data[['user','time']]
 user_duration = time_user_raw.groupby('user').agg({'time':[min,max]})
 user_duration.columns = ["_".join(x) for x in user_duration.columns.ravel()]
 user_duration['duration'] = user_duration['time_max'] - user_duration['time_min']
-user_duration.sort_values(by='duration')
+print user_duration.sort_values(by='duration').loc[act_data.user.unique()]['duration']
 
-labelled_act = os.path.join(datadir,'WISDM_at_v2.0_transformed.csv')
-labelled_raw = os.path.join(datadir, 'WISDM_at_v2.0_raw.txt')
-lraw_data = pd.read_csv(labelled_raw, header=None, names = raw_headers)
-lact_data = pd.read_csv(labelled_act, header=None, names = act_headers)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
+for userid in act_data.user.unique():
+    print userid
 
 user_act_data = act_data.loc[act_data['user']==194]['Activity']
 prev = user_act_data[0]
