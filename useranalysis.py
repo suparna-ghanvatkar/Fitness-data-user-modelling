@@ -36,6 +36,7 @@ raw_data = pd.concat([unlab_raw,lab_raw])
 act_data = pd.concat([unlab_act, lab_act])
 
 users = list(set(raw_data.user.unique()).intersection(set(act_data.user.unique())))
+print len(users)
 time_user_raw = raw_data[['user','time']]
 user_duration = time_user_raw.groupby('user').agg({'time':[min,max]})
 user_duration.columns = ["_".join(x) for x in user_duration.columns.ravel()]
@@ -44,7 +45,9 @@ user_duration['duration'] = user_duration['time_max'] - user_duration['time_min'
 user_duration = user_duration.loc[users]
 user_duration = user_duration[(user_duration['duration'].dt.total_seconds()) > 14400]
 
-users = user_duration.user.unique()
+#print user_duration.columns
+users = user_duration.index.values.tolist()
+print len(users)
 raw_data = raw_data.loc[raw_data['user'].isin(users)]
 act_data = act_data.loc[act_data['user'].isin(users)]
 
@@ -56,6 +59,7 @@ comm_users = list(set(lab_raw.user.unique()).intersection(set(users)))  #check s
 import pickle
 pickle.dump(raw_data, open('raw_data_selected.dump','wb'))
 pickle.dump(act_data, open('act_data_selected.dump','wb'))
+print "raw and act files writen"
 
 ugaps = {}
 for userid in users:
@@ -65,22 +69,23 @@ for userid in users:
     sumgap = 0
     user_raw_data = raw_data.loc[raw_data['user']==userid]
     user_raw_data = user_raw_data.sort_values('time')
-    prev_time = user_raw_data.iloc[0]['time']
-    gap = 0
-    print userid, 'GAP LENGTHS'
-    for index, attr in user_raw_data.iterrows():
-        tgap = (attr[2] - prev_time).total_seconds()
-        if  tgap > 120:
-            gap = gap + 1
-            #print tgap//60, 'min..i.e.', tgap,'s'
-            tgap_mins = tgap//60
-            if tgap_mins<mingap:
-                mingap = tgap_mins
-            elif tgap_mins>maxgap:
-                maxgap = tgap_mins
-            sumgap += tgap_mins
-        prev_time = attr[2]
-    meangap = sumgap/gap
-    ugaps[userid] = [mingap,maxgap,meangap,gap]
+    if not user_raw_data.empty:
+        prev_time = user_raw_data.iloc[0]['time']
+        gap = 0
+        print userid, 'GAP LENGTHS'
+        for index, attr in user_raw_data.iterrows():
+            tgap = (attr[2] - prev_time).total_seconds()
+            if  tgap > 120:
+                gap = gap + 1
+                #print tgap//60, 'min..i.e.', tgap,'s'
+                tgap_mins = tgap//60
+                if tgap_mins<mingap:
+                    mingap = tgap_mins
+                elif tgap_mins>maxgap:
+                    maxgap = tgap_mins
+                sumgap += tgap_mins
+            prev_time = attr[2]
+        meangap = sumgap/gap
+        ugaps[userid] = [mingap,maxgap,meangap,gap]
 
 print ugaps
