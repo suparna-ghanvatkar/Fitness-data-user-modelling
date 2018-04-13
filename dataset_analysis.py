@@ -13,3 +13,12 @@ diff_activities = dataset.Class.unique()
 for act in diff_activities:
     act_data = dataset.loc[dataset.Class==act]
     print act, ":", act_data.shape[0]
+
+#for every user, list all activities:
+users = dataset.user.unique()
+for usr in users:
+    user_data = dataset.loc[dataset.user==usr]
+    print "for user:", usr
+    for act in diff_activities:
+        usr_act_data = user_data.loc[user_data.Class==act]
+        print act, ":", act_data.shape[0]
