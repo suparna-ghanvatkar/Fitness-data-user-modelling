@@ -13,14 +13,15 @@ import math
 #import time
 
 def peak(data, time):
-    greatest = np.max(val_list_x)
+    greatest = np.max(data)
     threshold = 0.9*greatest
     peaks = [i>threshold for i in data]
     no_of_peaks = sum(peaks)
     while no_of_peaks<3:
-        threshold -= 0.05
+        threshold -= 0.1
         peaks = [i>threshold for i in data]
         no_of_peaks = sum(peaks)
+        #print "no of peaks:", no_of_peaks, "for data", data
     first = peaks.index(True)
     prev_time = time[first]
     prev_i = first
@@ -45,16 +46,18 @@ def resultant(vecx, vecy, vecz):
         res_vec.append(res)
     return np.mean(res_vec)
 
+
 def mad(data, axis=None): #mean absolute deviation
     return np.mean(np.absolute(data - np.mean(data, axis)), axis)
 
+
 parser = argparse.ArgumentParser()
 parser.add_argument('raw',type = str, help = 'raw file location')
-parser.add_argument('tx', type =str, help = 'transformed output file')
+#parser.add_argument('tx', type =str, help = 'transformed output file')
 args = parser.parse_args()
 
 raw_file = open(args.raw, 'rb')
-tx_file = open(args.tx, 'wb')
+tx_file = open(args.raw+'_transformed.txt', 'wb')
 
 activity_list = ["Walking","Jogging","Stairs","Sitting","Standing","LyingDown"]
 bins = [-2.5,0,2.5,5,7.5,10,12.5,15,17.5,20]
@@ -72,17 +75,29 @@ for line in raw_file:
     if line:
         try:
             line = line.replace(';', '\n')
-            print line
+            line = line.rstrip()
             try:
-                usr, act, t, x, y, z = line.split(',')
+                split_line = line.split(',')
+                if len(split_line) == 6:
+                    usr, act, t, x, y, z = split_line
+                elif len(split_line) > 6:
+                    usr = split_line[0]
+                    act = split_line[1]
+                    t = split_line[2]
+                    x = split_line[3]
+                    y = split_line[4]
+                    z = split_line[5]
                 #print type(t), t
                 if t=='0':
+                    continue
+                if z=='':
                     continue
                 else:
                     try:
                         float(z) and float(y) and float(x)
-                    except ValueError as e:
+                    except Exception as e:
                         print e
+                        print split_line
                         continue
             except Exception as e:
                 print line
@@ -100,9 +115,11 @@ for line in raw_file:
             #print time_diff, userid
             #timee = time.gmtime(int(t))
             #either file is starting to process or user is previous and no gap, if more than 15 seconds that means gap, then reset!
-            if acc<200 and (prev_usr==-1 or (prev_usr==userid and time_diff.total_seconds()<15 and act in activity_list and prev_act==act)):
+            #if acc<200 and (prev_usr==-1 or (prev_usr==userid and time_diff.total_seconds()<15 and act in activity_list and prev_act==act)):
             #if this isnt training set, then we just can club on the basis of time :)
-            #if acc<200 and (prev_usr==-1 or (prev_usr==userid and time_diff.total_seconds()<15)):
+            if acc<200 and (prev_usr==-1 or (prev_usr==userid and time_diff.total_seconds()<15)):
+            #for the AR dataset:
+            #if acc<200 and (prev_usr==-1 or (prev_usr==userid and prev_act==act)):
                 if prev_usr==-1:
                     prev_usr = userid
                     prev_time = time
@@ -142,7 +159,7 @@ for line in raw_file:
                     attribute[42] = resultant(val_list_x, val_list_y, val_list_z)
                     attribute[43] = prev_act
                     attribute[44] = prev_time
-                    print userid, attribute
+                    #print userid, attribute
                     #write to transformed file
                     tx_file.write(str(userid)+",")
                     for attr in attribute[:-1]:
@@ -150,6 +167,7 @@ for line in raw_file:
                     tx_file.write(str(attribute[-1]))
                     tx_file.write("\n")
                 #raw_input()
+                #print "acc value:" ,acc
                 acc = 0
                 val_list_x[:] = []
                 val_list_y[:] = []
@@ -164,4 +182,7 @@ for line in raw_file:
                 timestamps.append(time)
         except Exception as e:
             print e
+            #raw_input()
             continue
+
+print args.raw, "processed!!"
