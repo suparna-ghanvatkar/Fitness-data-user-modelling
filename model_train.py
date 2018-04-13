@@ -8,6 +8,7 @@ Created on Tue Apr 10 18:35:23 2018
 import numpy as np
 import pandas as pd
 import argparse
+from sklearn.linear_model import SGDClassifier
 from sklearn.metrics import accuracy_score
 from sklearn.utils import shuffle
 from sklearn.ensemble import RandomForestClassifier
@@ -124,14 +125,17 @@ Labels_10_folds.append(labels)
 print Features_10_folds[0].shape
 
 clf = RandomForestClassifier(max_depth = 8, random_state=0)
-mlp = MLPClassifier(hidden_layer_sizes = (100,50))
+mlp = MLPClassifier(hidden_layer_sizes = (50,25))
 gbt = GradientBoostingClassifier()
+sgd = SGDClassifier()
 acc_RF = []
 acc_MLP = []
 acc_GBT = []
+acc_SGD = []
 acc_RF_aug = []
 acc_MLP_aug = []
 acc_GBT_aug = []
+acc_SGD_aug = []
 for i in range(10):
     print "cross val results for set ", str(i)
     print "Random forest:"
@@ -149,6 +153,11 @@ for i in range(10):
     acc_GBT.append(a)
     print conf
     print "Accuracy:", a
+    print "Linear Classifier with SGD training"
+    conf, a = normal_cross_val(Features_10_folds, Labels_10_folds, i , sgd)
+    acc_SGD.append(a)
+    print conf
+    print "Accuracy:", a
     print "RF with AR augumented:"
     conf, a = balanced_cross_val(Features_10_folds, Labels_10_folds, i, clf, AR)
     acc_RF_aug.append(a)
@@ -164,14 +173,21 @@ for i in range(10):
     acc_GBT_aug.append(a)
     print conf
     print "Accuracy:", a
+    print "Linear Classifier with SGD training"
+    conf, a = balanced_cross_val(Features_10_folds, Labels_10_folds, i, sgd, AR)
+    acc_SGD_aug.append(a)
+    print conf
+    print "Accuracy:", a
 
 print "Average accuracy scores:"
 print "RF:", sum(acc_RF)/10.0
 print "MLP:", sum(acc_MLP)/10.0
 print "GBT:", sum(acc_GBT)/10.0
+print "SGD:", sum(acc_SGD)/10.0
 print "RF augumented:", sum(acc_RF_aug)/10.0
 print "MLP augumented:", sum(acc_MLP_aug)/10.0
 print "GBT augumented:", sum(acc_GBT_aug)/10.0
+print "SGD augumented:", sum(acc_SGD_aug)/10.0
 #cross_scores = cross_val_score(clf, feats[feats.columns[1:44]], feats[feats.columns[44]], cv=10)
 #print cross_scores
 #clf.fit(X_train, y_train)
