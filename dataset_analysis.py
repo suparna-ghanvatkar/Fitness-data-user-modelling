@@ -21,4 +21,4 @@ for usr in users:
     print "for user:", usr
     for act in diff_activities:
         usr_act_data = user_data.loc[user_data.Class==act]
-        print act, ":", act_data.shape[0]
+        print act, ":", usr_act_data.shape[0]
