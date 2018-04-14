@@ -8,12 +8,14 @@ Created on Tue Apr 10 18:35:23 2018
 import numpy as np
 import pandas as pd
 import argparse
-from sklearn.linear_model import SGDClassifier
+from sklearn.externals import joblib
 from sklearn.metrics import accuracy_score
 from sklearn.utils import shuffle
+from sklearn.svm import LinearSVC
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.multiclass import OneVsOneClassifier, OneVsRestClassifier
 from sklearn.neural_network import MLPClassifier
-from sklearn.ensemble import GradientBoostingClassifier
+from sklearn.ensemble import GradientBoostingClassifier, VotingClassifier
 from sklearn.model_selection import train_test_split, cross_val_score
 
 classes = ['Walking', 'Jogging', 'Standing', 'Stairs', 'LyingDown', 'Sitting']
@@ -127,15 +129,18 @@ print Features_10_folds[0].shape
 clf = RandomForestClassifier(max_depth = 8, random_state=0)
 mlp = MLPClassifier(hidden_layer_sizes = (50,25))
 gbt = GradientBoostingClassifier()
-sgd = SGDClassifier()
+ovr = OneVsRestClassifier(RandomForestClassifier())
+eclf = VotingClassifier(estimators=[('gbt',gbt),('ovr',ovr)], voting='soft')
 acc_RF = []
 acc_MLP = []
 acc_GBT = []
-acc_SGD = []
+acc_ovr = []
+acc_ECLF = []
 acc_RF_aug = []
 acc_MLP_aug = []
 acc_GBT_aug = []
-acc_SGD_aug = []
+acc_ovr_aug = []
+acc_ECLF_aug = []
 for i in range(10):
     print "cross val results for set ", str(i)
     print "Random forest:"
@@ -153,9 +158,14 @@ for i in range(10):
     acc_GBT.append(a)
     print conf
     print "Accuracy:", a
-    print "Linear Classifier with SGD training"
-    conf, a = normal_cross_val(Features_10_folds, Labels_10_folds, i , sgd)
-    acc_SGD.append(a)
+    print "Linear Classifier with ovr training"
+    conf, a = normal_cross_val(Features_10_folds, Labels_10_folds, i , ovr)
+    acc_ovr.append(a)
+    print conf
+    print "Accuracy:", a
+    print "Voting Clf for GBT and ovr:"
+    conf, a = normal_cross_val(Features_10_folds, Labels_10_folds, i, eclf)
+    acc_ECLF.append(a)
     print conf
     print "Accuracy:", a
     print "RF with AR augumented:"
@@ -173,9 +183,14 @@ for i in range(10):
     acc_GBT_aug.append(a)
     print conf
     print "Accuracy:", a
-    print "Linear Classifier with SGD training"
-    conf, a = balanced_cross_val(Features_10_folds, Labels_10_folds, i, sgd, AR)
-    acc_SGD_aug.append(a)
+    print "Linear Classifier with ovr training and augumented AR"
+    conf, a = balanced_cross_val(Features_10_folds, Labels_10_folds, i, ovr, AR)
+    acc_ovr_aug.append(a)
+    print conf
+    print "Accuracy:", a
+    print "Voting Classifier with GBT and ovr and augumented AR"
+    conf, a = balanced_cross_val(Features_10_folds, Labels_10_folds, i, eclf, AR)
+    acc_ECLF_aug.append(a)
     print conf
     print "Accuracy:", a
 
@@ -183,11 +198,23 @@ print "Average accuracy scores:"
 print "RF:", sum(acc_RF)/10.0
 print "MLP:", sum(acc_MLP)/10.0
 print "GBT:", sum(acc_GBT)/10.0
-print "SGD:", sum(acc_SGD)/10.0
+print "ovr:", sum(acc_ovr)/10.0
+print "Voting", sum(acc_ECLF)/10.0
 print "RF augumented:", sum(acc_RF_aug)/10.0
 print "MLP augumented:", sum(acc_MLP_aug)/10.0
 print "GBT augumented:", sum(acc_GBT_aug)/10.0
-print "SGD augumented:", sum(acc_SGD_aug)/10.0
+print "ovr augumented:", sum(acc_ovr_aug)/10.0
+print "Voting augumented:", sum(acc_ECLF_aug)/10.0
+
+Feature = feats[feats.columns[1:44]]
+Label = feats[feats.columns[44]]
+ovr.fit(Feature, Label)
+eclf.fit(Feature, Label)
+print "Saving OVR classifier as OVR.pickle"
+joblib.dump(ovr, 'OVR.pickle')
+print "Saving Voting classifier with OVR and GBT soft voting using argmax into Voting.pickle"
+joblib.dump(eclf, 'Voting.pickle')
+
 #cross_scores = cross_val_score(clf, feats[feats.columns[1:44]], feats[feats.columns[44]], cv=10)
 #print cross_scores
 #clf.fit(X_train, y_train)

@@ -12,6 +12,7 @@ import numpy as np
 import math
 #import time
 
+#PUT AN END FOR INFINITE LOOP THIS IS GOING INTO INFINITE LOOP MOSTLY!!
 def peak(data, time):
     greatest = np.max(data)
     threshold = 0.9*greatest
@@ -117,9 +118,9 @@ for line in raw_file:
             #either file is starting to process or user is previous and no gap, if more than 15 seconds that means gap, then reset!
             #if acc<200 and (prev_usr==-1 or (prev_usr==userid and time_diff.total_seconds()<15 and act in activity_list and prev_act==act)):
             #if this isnt training set, then we just can club on the basis of time :)
-            if acc<200 and (prev_usr==-1 or (prev_usr==userid and time_diff.total_seconds()<15)):
+            #if acc<200 and (prev_usr==-1 or (prev_usr==userid and time_diff.total_seconds()<15)):
             #for the AR dataset:
-            #if acc<200 and (prev_usr==-1 or (prev_usr==userid and prev_act==act)):
+            if acc<200 and (prev_usr==-1 or (prev_usr==userid and prev_act==act)):
                 if prev_usr==-1:
                     prev_usr = userid
                     prev_time = time
