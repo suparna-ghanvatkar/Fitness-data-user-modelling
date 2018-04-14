@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 from sklearn.externals import joblib
 
-parser = argparse.ArgumentParse()
+parser = argparse.ArgumentParser()
 parser.add_argument('tx', type = str, help = 'transformed featured file input path')
 parser.add_argument('model', type = str, help = 'model file path saved using joblib')
 args = parser.parse_args()
@@ -20,4 +20,4 @@ clf = joblib.load(args.model)
 pred_labels = clf.predict(feats[feats.columns[1:44]])
 feats['Class'] = list(pred_labels)
 
-pd.to_csv(args.tx+'_predicted.txt')
+feats.to_csv(args.tx+'_predicted.txt', header=False, index=False)
