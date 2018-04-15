@@ -78,7 +78,9 @@ filtered_demo = demographics.loc[demographics['user'].isin(users)]
 #filtered_raw_unlab = unlab_raw.loc[unlab_raw['user'].isin(users)]
 #filtered_act_unlab = unlab_act.loc[unlab_act['user'].isin(users)]
 #pickle.dump(filtered_raw_lab, open('filtered_raw_lab.csv','wb'))
-pickle.dump(filtered_act_lab, open('filtered_user_act.csv','wb'))
+#pickle.dump(filtered_act_lab, open('filtered_user_act.csv','wb'))
 #pickle.dump(filtered_raw_unlab, open('filtered_raw_unlab.csv','wb'))
 #pickle.dump(filtered_act_unlab, open('filtered_act_unlab.csv','wb'))
-pickle.dump(filtered_demo, open('filtered_user_demo.csv','wb'))
+#pickle.dump(filtered_demo, open('filtered_user_demo.csv','wb'))
+filtered_act_lab.to_csv('filtered_user_act.csv', header=False, index=False)
+filtered_demo.to_csv('filtered_user_demo.csv', header=False, index=False)

@@ -17,7 +17,7 @@ demo_headers = ['user','height','gender','age','weight','leg_injury']
 
 activity_data = pd.read_csv(args.act, header=None, names=act_headers)
 demographics = pd.read_csv(args.demo, header=None, names=demo_headers)
-activity_data['time'] = pd.to_datetime(activity_data['time'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
+activity_data['Time'] = pd.to_datetime(activity_data['Time'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
 
 activity_encoding = {'Walking':'A', 'Jogging':'B', 'Stairs':'C', 'Sitting':'D', 'Standing':'E', 'LyingDown':'F'}
 #generating user timeline..and storing
@@ -32,7 +32,7 @@ for usr in users:
 
 for usr in users:
     act_seq = []
-    user_act_data = activity_data.loc[activity_data.user==usr]['Activity','Time']
+    user_act_data = activity_data.loc[activity_data.user==usr][['Activity','Time']]
     user_act_data = user_act_data.sort_values(by='Time')
     prev = user_act_data.iloc[0]['Activity']
     prev_time = user_act_data.iloc[0]['Time']
@@ -45,22 +45,22 @@ for usr in users:
             stime = row['Time']
             gap = (stime-etime).total_seconds()
             print usr, gap, etime, stime
-            if gap>120:
-                ugaps[usr].append(gap)
+            if gap>180:
+                ugaps[usr].append(stime-etime)
             prev = row['Activity']
             prev_time = stime
-        elif (prev_time-row['Time']).total_seconds()>120:
+        elif (prev_time-row['Time']).total_seconds()>180:
             etime = prev_time
             uact[usr][stime] = [etime, (etime-stime).total_seconds()//60, prev]
             stime = row['Time']
-            gap = (stime-etime).total_seconds()
+            gap = (stime-etime)
             print usr, gap, etime, stime
             ugaps[usr].append(gap)
             prev_time = stime
         else:
             prev_time = row['Time']
         getime = prev_time
-    durations.append((getime-gstime).total_seconds()//60)
+    durations.append(getime-gstime)
 print uact
 print ugaps
 
@@ -69,6 +69,6 @@ pickle.dump(uact,open('userwise_activity.pickle', 'wb'))
 pickle.dump(ugaps, open('userwise_gaps.pickle','wb'))
 
 print "User durations:"
-for i,dur in durations.enumerate():
+for i,dur in enumerate(durations):
     print users[i], dur
 

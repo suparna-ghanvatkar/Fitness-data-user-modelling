@@ -18,7 +18,9 @@ for act in diff_activities:
 users = dataset.user.unique()
 for usr in users:
     user_data = dataset.loc[dataset.user==usr]
+    print "----"
     print "for user:", usr
     for act in diff_activities:
         usr_act_data = user_data.loc[user_data.Class==act]
-        print act, ":", usr_act_data.shape[0]
+        print act, ":", usr_act_data.shape[0],
+    print "Total activity log:", user_data.shape[0]*10/60 , "mins"
