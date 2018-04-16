@@ -84,7 +84,7 @@ print users
 nan_users = {}
 for userid in users:
     user_act_data = act_data.loc[act_data['user']==userid][['Activity','Time']]
-    print user_act_data.head()
+    #print user_act_data.head()
     user_act_data = user_act_data.sort_values(by='Time')
     prev = user_act_data.iloc[0]['Activity']
     #feat = [walk_dur, jog_dur, stand_dur, sit_dur, stair_dur, ly_dur, no_tx, walk_jog, walk_sit, sit_walk]
@@ -196,10 +196,9 @@ plt.legend(loc='best')
 plt.xlabel('n_components')
 
 '''
-'''Temp comment
 #Finding suitable GMM params
 
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 
 n_components_range = range(2,16)
 cv_types = ['spherical', 'tied', 'diag', 'full']
@@ -215,13 +214,14 @@ for cv_type in cv_types:
         if bic[-1] < lowest_bic:
             lowest_bic = bic[-1]
             best_gmm = gmm
-
-bic = np.array(bic)
-color_iter = itertools.cycle(['navy', 'turquoise', 'cornflowerblue',
-                              'darkorange'])
-clf = best_gmm
-bars = []
-
+print bic
+print best_gmm
+#bic = np.array(bic)
+#color_iter = itertools.cycle(['navy', 'turquoise', 'cornflowerblue',
+#                              'darkorange'])
+#clf = best_gmm
+#bars = []
+'''
 # Plot the BIC scores
 spl = plt.subplot(2, 1, 1)
 for i, (cv_type, color) in enumerate(zip(cv_types, color_iter)):
@@ -244,8 +244,9 @@ plt.plot(n_components, [m.bic(ufeats) for m in models], label='BIC')
 plt.plot(n_components, [m.aic(ufeats) for m in models], label='AIC')
 plt.legend(loc='best')
 plt.xlabel('n_components')
-# In[9]:
 '''
+# In[9]:
+
 
 from sklearn.cluster import DBSCAN
 from sklearn import metrics
@@ -265,7 +266,8 @@ print("Silhouette Coefficient: %0.3f" % metrics.silhouette_score(ufeats, db_labe
 
 
 #cluster characteristics when 5 clusters for GMM and 3 for DBSCAN
-gmm = GaussianMixture(5, covariance_type='diag', random_state=0).fit(ufeats)
+gmm = GaussianMixture(3, covariance_type='diag', random_state=0).fit(ufeats)
+#gmm = best_gmm
 user_labels_gmm = gmm.predict(ufeats)
 print user_labels_gmm
 
@@ -273,16 +275,16 @@ def indices( mylist, value):
     return [i for i,x in enumerate(mylist) if x==value]
 
 gmm_clusters = {}
-for n in range(8):
+for n in range(3):
    gmm_clusters[n] = indices(user_labels_gmm, n)
-
+'''
 #dbscan clusters
 db_clusters = {}
 for n in range(2):
     db_clusters[n] = indices(db_labels, n)
-
+'''
 print 'gmm:', gmm_clusters
-print 'db:',db_clusters
+#print 'db:',db_clusters
 
 
 # In[12]:
@@ -292,8 +294,8 @@ for cluster in gmm_clusters.keys():
     users_in_cluster = gmm_clusters[cluster]
     print 'CLUSTER ', cluster
     for u in users_in_cluster:
-        print users[u],':',user_feats[u]
-
+        print users[u],':',demographics[demographics.user==users[u]].head(1)
+'''
 print 'DBSCAN'
 for cluster in db_clusters.keys():
     users_in_cluster = db_clusters[cluster]
@@ -301,7 +303,7 @@ for cluster in db_clusters.keys():
     for u in users_in_cluster:
         print users[u],':',user_feats[u]
 
-
+'''
 # In[13]:
 
 
