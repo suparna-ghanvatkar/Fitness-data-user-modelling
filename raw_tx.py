@@ -18,11 +18,17 @@ def peak(data, time):
     threshold = 0.9*greatest
     peaks = [i>threshold for i in data]
     no_of_peaks = sum(peaks)
-    while no_of_peaks<3:
+    no_of_attempts = 70
+    while no_of_peaks<3 and no_of_attempts:
         threshold -= 0.1
         peaks = [i>threshold for i in data]
         no_of_peaks = sum(peaks)
+        no_of_attempts -= 1
         #print "no of peaks:", no_of_peaks, "for data", data
+    if no_of_attempts==0:
+        threshold = 0.2
+        peaks = [i>threshold for i in data]
+        no_of_peaks = sum(peaks)
     first = peaks.index(True)
     prev_time = time[first]
     prev_i = first
@@ -77,6 +83,7 @@ for line in raw_file:
         try:
             line = line.replace(';', '\n')
             line = line.rstrip()
+            print args.raw
             try:
                 split_line = line.split(',')
                 if len(split_line) == 6:
@@ -159,7 +166,7 @@ for line in raw_file:
                     attribute[41] = np.std(val_list_z)
                     attribute[42] = resultant(val_list_x, val_list_y, val_list_z)
                     attribute[43] = prev_act
-                    attribute[44] = prev_time
+                    attribute[44] = timestamps[-1]
                     #print userid, attribute
                     #write to transformed file
                     tx_file.write(str(userid)+",")

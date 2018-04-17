@@ -38,11 +38,12 @@ for usr in users:
 for usr in users:
     user_act_data = activity_data.loc[activity_data.user==usr][['Activity','Time']]
     user_act_data = user_act_data.sort_values(by='Time')
-    prev = user_act_data.iloc[0]['Activity']
-    prev_time = user_act_data.iloc[0]['Time']
-    stime = prev_time
+    prev_act = user_act_data.iloc[0]['Activity']
+    prev_time = user_act_data.iloc[0]['Time'] - timedelta(seconds=10)
+    stime = prev_time - timedelta(seconds=10)
+    prev_date = prev_time.date()
     gstime = stime
-    seq = activity_encoding[prev]
+    #seq = activity_encoding[prev]
     print "-----------------------------------------------------------------------------------------------------"
     print "USER ID:",usr
     print "Demographics:"
@@ -53,11 +54,33 @@ for usr in users:
         act_data = user_act_data.loc[user_act_data.Activity==act]
         print act, ":", act_data.shape[0]*10/60,"mins",
     print "Timeline:."
+    per_day_usr_activity = []
     for i, row in user_act_data.iterrows():
         print row
+        curr_time = row['Time']
+        curr_act = row['Activity']
+        curr_date = curr_time.date()
+        if curr_date!=prev_date:
+            print prev_act, prev_time-stime, " ", stime," ", prev_time
+            per_day_usr_activity.append([usr, prev_date, prev_act,stime,prev_time])
+            print curr_date
+            stime = curr_time - timedelta(seconds=10)
+        elif curr_time-prev_time>timedelta(seconds=15):
+            print prev_act, prev_time-stime," ", stime, " ", prev_time
+            per_day_usr_activity.append([usr, prev_date, prev_act,stime,prev_time])
+            print "gap", curr_time-prev_time, " ", prev_time, " ", curr_time
+            stime = curr_time - timedelta(seconds=10)
+        elif curr_act!=prev_act:
+            print prev_act, prev_time-stime, " ", stime, " ", prev_time
+            per_day_usr_activity.append([usr, prev_date, prev_act,stime,prev_time])
+            stime = curr_time - timedelta(seconds=10)
+        prev_time = curr_time
+        prev_date = prev_time.date()
+        prev_act = curr_act
+        '''
         if row['Activity']!=prev:
             etime = prev_time
-            uact[usr][stime] = [etime, (etime-stime).total_seconds()//60, prev]
+            #uact[usr][stime] = [etime, (etime-stime).total_seconds()//60, prev]
             print prev,"(",etime-stime+timedelta(seconds=10),")",
             stime = row['Time']
             gap = (stime-etime).total_seconds()
@@ -91,6 +114,7 @@ for usr in users:
         else:
             prev_time = row['Time']
             seq += activity_encoding[prev]
+        '''
         getime = prev_time
     durations.append(getime-gstime)
     #print ":-:"
@@ -99,7 +123,10 @@ for usr in users:
     print "Total duration of recording:",(getime-gstime+timedelta(seconds=10))
 #print uact
 #print ugaps
-
+df = pd.DataFrame(per_day_usr_activity, columns=['user','date','activity','start','end'])
+print df.head()
+pickle.dump(df, open('userwisedailyactivitytimeline.pickle', 'wb'))
+'''
 #for the activity sequences generated, find frequent patterns
 pattern_lists = []
 for usr in users:
@@ -122,4 +149,4 @@ pickle.dump(act_seqs, open('userwiseactivity.pickle','wb'))
 print "User durations:"
 for i,dur in enumerate(durations):
     print users[i], dur
-
+'''
