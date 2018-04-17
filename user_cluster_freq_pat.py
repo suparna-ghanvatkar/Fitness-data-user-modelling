@@ -34,6 +34,7 @@ for usr in users:
     uact[usr] = {}
     ugaps[usr] = []
     act_seqs[usr] = []
+per_day_usr_activity = []
 
 for usr in users:
     user_act_data = activity_data.loc[activity_data.user==usr][['Activity','Time']]
@@ -44,35 +45,37 @@ for usr in users:
     prev_date = prev_time.date()
     gstime = stime
     #seq = activity_encoding[prev]
-    print "-----------------------------------------------------------------------------------------------------"
+    print ":"
+    print "::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
     print "USER ID:",usr
     print "Demographics:"
     print demographics.loc[demographics.user==usr]
     print "Total no of activities recorded:", user_act_data.shape[0]
     print "Total duration of recorded activity:", user_act_data.shape[0]*10/60, "mins"
+    durations.append(user_act_data.shape[0]*10/60)
     for act in activity_encoding.keys():
         act_data = user_act_data.loc[user_act_data.Activity==act]
         print act, ":", act_data.shape[0]*10/60,"mins",
     print "Timeline:."
-    per_day_usr_activity = []
     for i, row in user_act_data.iterrows():
-        print row
+        #print row
         curr_time = row['Time']
         curr_act = row['Activity']
         curr_date = curr_time.date()
         if curr_date!=prev_date:
             print prev_act, prev_time-stime, " ", stime," ", prev_time
-            per_day_usr_activity.append([usr, prev_date, prev_act,stime,prev_time])
+            per_day_usr_activity.append([usr, prev_date, prev_act, prev_time-stime, stime,prev_time])
+            print "-------------------------------------------------------------------"
             print curr_date
             stime = curr_time - timedelta(seconds=10)
         elif curr_time-prev_time>timedelta(seconds=15):
             print prev_act, prev_time-stime," ", stime, " ", prev_time
-            per_day_usr_activity.append([usr, prev_date, prev_act,stime,prev_time])
+            per_day_usr_activity.append([usr, prev_date, prev_act,prev_time-stime, stime,prev_time])
             print "gap", curr_time-prev_time, " ", prev_time, " ", curr_time
             stime = curr_time - timedelta(seconds=10)
         elif curr_act!=prev_act:
             print prev_act, prev_time-stime, " ", stime, " ", prev_time
-            per_day_usr_activity.append([usr, prev_date, prev_act,stime,prev_time])
+            per_day_usr_activity.append([usr, prev_date, prev_act,prev_time-stime, stime,prev_time])
             stime = curr_time - timedelta(seconds=10)
         prev_time = curr_time
         prev_date = prev_time.date()
@@ -116,14 +119,14 @@ for usr in users:
             seq += activity_encoding[prev]
         '''
         getime = prev_time
-    durations.append(getime-gstime)
+    #durations.append(getime-gstime)
     #print ":-:"
     #print act_seqs[usr]
     print "-:-"
     print "Total duration of recording:",(getime-gstime+timedelta(seconds=10))
 #print uact
 #print ugaps
-df = pd.DataFrame(per_day_usr_activity, columns=['user','date','activity','start','end'])
+df = pd.DataFrame(per_day_usr_activity, columns=['user','date','activity','duration', 'start','end'])
 print df.head()
 pickle.dump(df, open('userwisedailyactivitytimeline.pickle', 'wb'))
 '''
@@ -140,13 +143,12 @@ print "Frequent patterns:"
 #print sorted(freq_seqs)
 print p.out
 print activity_encoding
-
+'''
 pickle.dump(durations, open('durations.pickle','wb'))
 pickle.dump(uact,open('userwise_activity.pickle', 'wb'))
 pickle.dump(ugaps, open('userwise_gaps.pickle','wb'))
 pickle.dump(act_seqs, open('userwiseactivity.pickle','wb'))
-
 print "User durations:"
 for i,dur in enumerate(durations):
     print users[i], dur
-'''
+

@@ -26,7 +26,8 @@ def peak(data, time):
         no_of_attempts -= 1
         #print "no of peaks:", no_of_peaks, "for data", data
     if no_of_attempts==0:
-        threshold = 0.2
+        #print "peaks : ", data
+        threshold = np.mean(data)
         peaks = [i>threshold for i in data]
         no_of_peaks = sum(peaks)
     first = peaks.index(True)
@@ -80,10 +81,10 @@ val_list_z = []
 timestamps = []
 for line in raw_file:
     if line:
-        try:
+        #try:
             line = line.replace(';', '\n')
             line = line.rstrip()
-            print args.raw
+            #print args.raw
             try:
                 split_line = line.split(',')
                 if len(split_line) == 6:
@@ -97,13 +98,16 @@ for line in raw_file:
                     z = split_line[5]
                 #print type(t), t
                 if t=='0':
+                    print 't=0 found in ', line
                     continue
                 if z=='':
+                    print 'no z found in', line
                     continue
                 else:
                     try:
                         float(z) and float(y) and float(x)
                     except Exception as e:
+                        print "couldnt convert to float"
                         print e
                         print split_line
                         continue
@@ -115,6 +119,7 @@ for line in raw_file:
             try:
                 time = datetime.datetime.fromtimestamp(int(t)/1000)
             except Exception as e:
+                print "timestamp conversion issue:", line
                 print e
                 continue
             if prev_time==-1:
@@ -188,9 +193,11 @@ for line in raw_file:
                 val_list_y.append(float(y))
                 val_list_z.append(float(z))
                 timestamps.append(time)
-        except Exception as e:
-            print e
+        #except Exception as e:
+        #    print line
+        #    print "global exception raised"
+        #    print e
             #raw_input()
-            continue
+        #    continue
 
 print args.raw, "processed!!"
