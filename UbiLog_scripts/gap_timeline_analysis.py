@@ -20,38 +20,49 @@ users = dataset.User.unique()
 for usr in users:
     user_act = dataset.loc[dataset.User==usr]
     dates = user_act.Date.unique()
+    print len(dates)
     for date in dates:
-        print "Date:", date
+        #print "Date:", date
         date_act = user_act.loc[user_act.Date==date]
         date_act = date_act.sort_values(by='Start')
         stime = date_act.iloc[0]['Start']
         gstime = stime
         prev_time = date_act.iloc[0]['End']
         prev_act = date_act.iloc[0]['Activity']
+        seq = 0
         for i,row in date_act.iterrows():
             curr_time = row['Start']
             curr_act = row['Activity']
-            if curr_time-prev_time>timedelta(seconds=20):
-                print prev_act, prev_time-stime," ",stime," ",prev_time
-                per_day_usr_activity.append([usr,date,prev_act,prev_time-stime,stime,prev_time])
-                print "gap",curr_time-prev_time," ",prev_time," ",curr_time
+            if curr_time-prev_time>timedelta(minutes=5):
+                #print prev_act, prev_time-stime," ",stime," ",prev_time
+                per_day_usr_activity.append([usr,date,seq, prev_act,prev_time-stime,stime,prev_time])
+                #print "gap",curr_time-prev_time," ",prev_time," ",curr_time
                 gaps.append([usr,date,curr_time-prev_time,prev_time,curr_time])
+                seq += 1
+                stime = curr_time
+            elif curr_time-prev_time>timedelta(seconds=40):
+                per_day_usr_activity.append([usr,date,seq,prev_act,prev_time-stime,stime,prev_time])
+                per_day_usr_activity.append([usr,date,seq,'gap',curr_time-prev_time,prev_time,curr_time])
                 stime = curr_time
             elif curr_act!=prev_act:
-                print prev_act, prev_time-stime," ",stime," ",prev_time
-                per_day_usr_activity.append([usr,date,prev_act,prev_time-stime,stime,prev_time])
+                #print prev_act, prev_time-stime," ",stime," ",prev_time
+                per_day_usr_activity.append([usr,date,seq, prev_act,prev_time-stime,stime,prev_time])
                 stime = curr_time
             prev_time = row['End']
             prev_act = curr_act
             getime = prev_time
-        print"-------------------------"
-        print "Duration of recording in day:",getime-gstime, gstime,getime
-        print":::::::::::::::::::::::::::::::"
-        print "------------------------------"
+        #print"-------------------------"
+        #print "Duration of recording in day:",getime-gstime, gstime,getime
+        #print":::::::::::::::::::::::::::::::"
+        #print "------------------------------"
 
-df = pd.DataFrame(per_day_usr_activity, columns = ['user','date','activity','duration','start','end'])
+df = pd.DataFrame(per_day_usr_activity, columns = ['user','date','seq_no','activity','duration','start','end'])
 gp = pd.DataFrame(gaps, columns=['user','date','duration','start','end'])
+df.start.dt.to_pydatetime()
+df.end.dt.to_pydatetime()
+print df.dtypes
 gp.to_csv('ubiq_gaps.csv',index=False)
+print df.head()
 dates_per_user = []
 #Printing gap statistics:
 for usr in users:

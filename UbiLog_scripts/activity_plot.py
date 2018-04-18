@@ -2,9 +2,11 @@ import argparse
 import pickle
 import datetime
 import numpy as np
-from datetime import timedelta
+from datetime import timedelta, date
+from datetime import datetime as dat
 import matplotlib.pyplot as plt
 import random
+import pandas as pd
 import matplotlib
 
 matplotlib.use('Agg')
@@ -22,31 +24,34 @@ def plot_timeline(data, outpath):
     y = []
     colors = []
     lines = []
+    data['start'] = data['start']
+    data['end'] = data['end']
+    #print data.dtypes
     base_colors = ['red','green','blue','black']
     color_counter = 0
     plt.figure(figsize=(400,6))
     plt.ylim((-1,len(series)))
-    start_time = data.iloc[0]['start']
-    end_time = data.iloc[-1]['end']
+    start_time = data.iloc[0]['start'].replace(microsecond=0)
+    end_time = data.iloc[-1]['end'].replace(microsecond=0)
     for i,row in data.iterrows():
         #print row
         activity = row['activity']
-        times = row['start'].time()
-        timee = row['end'].time()
+        times = row['start'].replace(microsecond=0)
+        timee = row['end'].replace(microsecond=0)
         lines.append(([times,activity],[timee,activity]))
-        x.append(times)
-        x.append(timee)
+        x.append(times.replace(microsecond=0))
+        x.append(timee.replace(microsecond=0))
         y.append(series.index(activity))
         y.append(series.index(activity))
         colors.append(base_colors[color_counter%4])
         colors.append(base_colors[color_counter%4])
         color_counter += 1
 #    plt.plot(x,y,'ro')
-    xticks = [dt.time() for dt in datetime_range(start_time-timedelta(minutes=1), end_time+timedelta(minutes=1), timedelta(seconds=1))]
+    xticks = [dt.time() for dt in datetime_range(dat.combine(date.today(),start_time)-timedelta(minutes=1), dat.combine(date.today(),end_time)+timedelta(minutes=1), timedelta(seconds=1))]
     #print start_time, end_time, xticks
-    xlabels = [dt.strftime('%H:%M:%s') for dt in datetime_range(start_time-timedelta(minutes=1), end_time+timedelta(minutes=1), timedelta(minutes=10))]
-    print xlabels
-    xpos = [2*xticks.index(dt.time()) for dt in datetime_range(start_time-timedelta(minutes=1), end_time+timedelta(minutes=1), timedelta(minutes=10))]
+    xlabels = [dt.strftime('%H:%M:%s') for dt in datetime_range(dat.combine(date.today(),start_time)-timedelta(minutes=1), dat.combine(date.today(),end_time)+timedelta(minutes=1), timedelta(minutes=10))]
+    #print xlabels
+    xpos = [2*xticks.index(dt.time()) for dt in datetime_range(dat.combine(date.today(),start_time)-timedelta(minutes=1), dat.combine(date.today(),end_time)+timedelta(minutes=1), timedelta(minutes=10))]
     for i in range(len(x)):
         x[i] = 2*xticks.index(x[i])
     plt.grid()
@@ -60,30 +65,31 @@ def plot_timeline(data, outpath):
     locs,labs = plt.yticks()
     series.insert(0," ")
     plt.yticks(locs, series)
-    print plt.xticks()
+    #print plt.xticks()
     #ax = plt.gca()
     #ax.set_xticks((10,100,1000))
     #plt.scatter(x,y, color=colors)
     return plt.savefig(outpath, format = 'svg', dpi=1200)
 
-parser = argparse.ArgumentParser()
-parser.add_argument('daywise_act', type=str, help='path to day wise user wise activity data')
-parser.add_argument('outpath', type=str, help='path to output svg file')
-args = parser.parse_args()
+if __name__=='__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('daywise_act', type=str, help='path to day wise user wise activity data')
+    parser.add_argument('outpath', type=str, help='path to output svg file')
+    args = parser.parse_args()
 
-data = pickle.load(open(args.daywise_act,'rb'))
-users = data.user.unique()
-print data.dtypes
-print users
-usr = random.choice(users)
-#usr = 1320
-print usr
-user_data = data.loc[data.user==usr]
-dates = user_data.date.unique()
-dt = random.choice(dates)
-#dt = datetime.date(year=2013, month=10, day=2)
-print dt
-#print user_data
-plot_data = user_data.loc[user_data.date==dt][['activity','start','end']]
-print plot_data
-plot_timeline(plot_data,args.outpath)
+    data = pickle.load(open(args.daywise_act,'rb'))
+    users = data.user.unique()
+    print data.dtypes
+    print users
+    usr = random.choice(users)
+    #usr = 1320
+    print usr
+    user_data = data.loc[data.user==usr]
+    dates = user_data.date.unique()
+    dt = random.choice(dates)
+    #dt = datetime.date(year=2013, month=10, day=2)
+    print dt
+    print user_data.dtypes
+    plot_data = user_data.loc[user_data.date==dt][['activity','start','end']]
+    print plot_data
+    plot_timeline(plot_data,args.outpath)

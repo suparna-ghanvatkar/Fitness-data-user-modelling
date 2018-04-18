@@ -6,3 +6,4 @@
 *.dump
 *.pickle
 *.svg
+*.pyc

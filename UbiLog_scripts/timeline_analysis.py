@@ -48,10 +48,8 @@ for usr in users:
             seq_data = day_act.loc[day_act.seq_no==seq]
             no_seqs += 1
             #for ubiq data uncommment next two lines
-            #if (seq_data.iloc[-1]['end'].to_pydatetime()-seq_data.iloc[0]['start'].to_pydatetime())>longest_seq:
-            #    longest_seq = seq_data.iloc[-1]['end'].to_pydatetime()-seq_data.iloc[0]['start'].to_pydatetime()
-            if (datetime.combine(date.today(),seq_data.iloc[-1]['end'])-datetime.combine(date.today(),seq_data.iloc[0]['start']))>longest_seq:
-                longest_seq = datetime.combine(date.today(),seq_data.iloc[-1]['end'])-datetime.combine(date.today(),seq_data.iloc[0]['start'])
+            if (seq_data.iloc[-1]['end'].to_pydatetime()-seq_data.iloc[0]['start'].to_pydatetime())>longest_seq:
+                longest_seq = seq_data.iloc[-1]['end'].to_pydatetime()-seq_data.iloc[0]['start'].to_pydatetime()
             #print seq_data.iloc[-1]
                 #print seq_data.tail(1)
                 #print seq_data.iloc[0]
@@ -63,8 +61,8 @@ for usr in users:
     #print long_seq_data.iloc[-1]
     plot_data = long_seq_data[['activity','start','end']]
     #print plot_data.dtypes
-    #plot_data['start'] = [s.time() for s in plot_data['start']]
-    #plot_data['end'] = [e.time() for e in plot_data['end']]
+    plot_data['start'] = [s.time() for s in plot_data['start']]
+    plot_data['end'] = [e.time() for e in plot_data['end']]
     plot_timeline(plot_data, str(usr)+'longest.svg')
     for i,act in enumerate(activities):
         tot_act = user_data.loc[user_data.activity==act]['duration']
