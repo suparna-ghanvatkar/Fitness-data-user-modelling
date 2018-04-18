@@ -51,7 +51,7 @@ for usr in users:
 
 df = pd.DataFrame(per_day_usr_activity, columns = ['user','date','activity','duration','start','end'])
 gp = pd.DataFrame(gaps, columns=['user','date','duration','start','end'])
-
+gp.to_csv('ubiq_gaps.csv',index=False)
 dates_per_user = []
 #Printing gap statistics:
 for usr in users:

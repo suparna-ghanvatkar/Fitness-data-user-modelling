@@ -69,12 +69,12 @@ for usr in users:
             day_dur += ((prev_time-stime).total_seconds()/60)
             cont_durations[usr].append(day_dur)
             day_dur = 0
-            seq = 0
             per_day_usr_activity.append([usr, prev_date, seq, prev_act, prev_time-stime, stime.time(),prev_time.time()])
+            seq = 0
             print "-------------------------------------------------------------------"
             print curr_date
             stime = curr_time - timedelta(seconds=10)
-        elif curr_time-prev_time>timedelta(minutes=5):
+        elif curr_time-prev_time>timedelta(minutes=30):
             #print prev_act, prev_time-stime," ", stime, " ", prev_time
             day_dur += ((prev_time-stime).total_seconds()/60)
             cont_durations[usr].append(day_dur)
