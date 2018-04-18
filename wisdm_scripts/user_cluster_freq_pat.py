@@ -9,6 +9,7 @@ import pickle
 from datetime import timedelta
 from pyprefixspan import pyprefixspan
 from pymining import seqmining
+from operator import itemgetter
 
 parser = argparse.ArgumentParser()
 parser.add_argument('act', type=str, help='activity file path')
@@ -27,12 +28,11 @@ activity_encoding = {'Walking':'A', 'Jogging':'B', 'Stairs':'C', 'Sitting':'D', 
 users = activity_data.user.unique()
 
 act_seqs = {}
-uact = {}
-ugaps = {}
+cont_durations = {}
+ugaps = []
 durations = []
 for usr in users:
-    uact[usr] = {}
-    ugaps[usr] = []
+    cont_durations[usr] = []
     act_seqs[usr] = []
 per_day_usr_activity = []
 
@@ -44,6 +44,7 @@ for usr in users:
     stime = prev_time - timedelta(seconds=10)
     prev_date = prev_time.date()
     gstime = stime
+    day_dur = 0
     #seq = activity_encoding[prev]
     print ":"
     print "::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
@@ -56,26 +57,42 @@ for usr in users:
     for act in activity_encoding.keys():
         act_data = user_act_data.loc[user_act_data.Activity==act]
         print act, ":", act_data.shape[0]*10/60,"mins",
-    print "Timeline:."
+    #print "Timeline:."
+    seq = 0
     for i, row in user_act_data.iterrows():
         #print row
         curr_time = row['Time']
         curr_act = row['Activity']
         curr_date = curr_time.date()
         if curr_date!=prev_date:
-            print prev_act, prev_time-stime, " ", stime," ", prev_time
-            per_day_usr_activity.append([usr, prev_date, prev_act, prev_time-stime, stime,prev_time])
+            #print prev_act, prev_time-stime, " ", stime," ", prev_time
+            day_dur += ((prev_time-stime).total_seconds()/60)
+            cont_durations[usr].append(day_dur)
+            day_dur = 0
+            seq = 0
+            per_day_usr_activity.append([usr, prev_date, seq, prev_act, prev_time-stime, stime.time(),prev_time.time()])
             print "-------------------------------------------------------------------"
             print curr_date
             stime = curr_time - timedelta(seconds=10)
+        elif curr_time-prev_time>timedelta(minutes=5):
+            #print prev_act, prev_time-stime," ", stime, " ", prev_time
+            day_dur += ((prev_time-stime).total_seconds()/60)
+            cont_durations[usr].append(day_dur)
+            per_day_usr_activity.append([usr, prev_date, seq, prev_act, prev_time-stime, stime.time(),prev_time.time()])
+            #print "gap", curr_time-prev_time, " ", prev_time, " ", curr_time
+            day_dur = 0
+            seq += 1
+            ugaps.append([usr, prev_date, curr_time-prev_time,prev_time,curr_time])
+            stime = curr_time - timedelta(seconds=10)
         elif curr_time-prev_time>timedelta(seconds=15):
-            print prev_act, prev_time-stime," ", stime, " ", prev_time
-            per_day_usr_activity.append([usr, prev_date, prev_act,prev_time-stime, stime,prev_time])
-            print "gap", curr_time-prev_time, " ", prev_time, " ", curr_time
+            per_day_usr_activity.append([usr, prev_date, seq, prev_act, prev_time-stime, stime.time(), prev_time.time()])
+            per_day_usr_activity.append([usr, prev_date, seq, 'gap', curr_time-prev_time, prev_time.time(), curr_time.time()])
+            day_dur += ((prev_time-stime).total_seconds()/60)
             stime = curr_time - timedelta(seconds=10)
         elif curr_act!=prev_act:
-            print prev_act, prev_time-stime, " ", stime, " ", prev_time
-            per_day_usr_activity.append([usr, prev_date, prev_act,prev_time-stime, stime,prev_time])
+            #print prev_act, prev_time-stime, " ", stime, " ", prev_time
+            day_dur += ((prev_time-stime).total_seconds()/60)
+            per_day_usr_activity.append([usr, prev_date, seq, prev_act,prev_time-stime, stime.time(),prev_time.time()])
             stime = curr_time - timedelta(seconds=10)
         prev_time = curr_time
         prev_date = prev_time.date()
@@ -123,12 +140,16 @@ for usr in users:
     #print ":-:"
     #print act_seqs[usr]
     print "-:-"
-    print "Total duration of recording:",(getime-gstime+timedelta(seconds=10))
+    print "Total duration of recording:", sum(cont_durations[usr])
 #print uact
 #print ugaps
-df = pd.DataFrame(per_day_usr_activity, columns=['user','date','activity','duration', 'start','end'])
-print df.head()
-pickle.dump(df, open('userwisedailyactivitytimeline.pickle', 'wb'))
+df = pd.DataFrame(per_day_usr_activity, columns=['user','date','seq_no', 'activity','duration', 'start','end'])
+gp = pd.DataFrame(ugaps, columns=['user','date','duration','start','end'])
+print df.head(100)
+df.to_csv('wisdm_activity_timeline.csv', index=False)
+gp.to_csv('wisdm_gaps.csv', index=False)
+pickle.dump(df, open('wisdm_userwisedailyactivitytimeline.pickle', 'wb'))
+pickle.dump(gp, open('wisdm_gapdata.pickle','wb'))
 '''
 #for the activity sequences generated, find frequent patterns
 pattern_lists = []
@@ -144,11 +165,21 @@ print "Frequent patterns:"
 print p.out
 print activity_encoding
 '''
-pickle.dump(durations, open('durations.pickle','wb'))
-pickle.dump(uact,open('userwise_activity.pickle', 'wb'))
-pickle.dump(ugaps, open('userwise_gaps.pickle','wb'))
-pickle.dump(act_seqs, open('userwiseactivity.pickle','wb'))
-print "User durations:"
-for i,dur in enumerate(durations):
-    print users[i], dur
+#pickle.dump(cont_durations, open('wisdm_durations.pickle','wb'))
+#pickle.dump(uact,open('wisdm_userwise_activity.pickle', 'wb'))
+#pickle.dump(ugaps, open('wisdm_userwise_gaps.pickle','wb'))
+#pickle.dump(act_seqs, open('wisdm_userwiseactivity.pickle','wb'))
+
+user_wise_durs_long = {}
+print "Everyday activity duration:"
+for usr in users:
+    #usr_data = per_day_usr_activity.loc[per_day_usr_activity.user==usr]
+    #dates = usr_data.date.unique()
+    #user_wise_days.append(len(dates))
+    #print usr,":",len(dates)
+    durs = sorted(cont_durations[usr], reverse=True)
+#    print usr,":",len(cont_durations[usr]),
+    user_wise_durs_long[usr] = durs[0]
+
+print sorted(user_wise_durs_long.items(), key=itemgetter(1), reverse=True)
 

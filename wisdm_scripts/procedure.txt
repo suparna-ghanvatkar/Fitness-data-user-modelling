@@ -1,0 +1,9 @@
+Procedure for WISDM dataset:
+
+#transforming the raw files to features:
+python raw_tx.py [path_to_raw_file]
+#output in [raw_file]_transformed.txt
+#train the model
+python model_train.py [raw_file] [AR_file]
+#outputs in OVR.pickle and Voting.pickle
+python activity_rec
