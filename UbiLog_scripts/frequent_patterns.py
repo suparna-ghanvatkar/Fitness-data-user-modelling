@@ -17,6 +17,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('act',type=str,help='csv activity user file')
 parser.add_argument('analysis',type=str,help='csv file to timeline analysis with users to be considered')
 parser.add_argument('gran',type=int,help='seconds to consider as quantum')
+parser.add_argument('len',type=int, help='length of pattern string to mine')
 args = parser.parse_args()
 
 analysis = pd.read_csv(args.analysis)
