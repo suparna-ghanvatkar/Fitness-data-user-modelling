@@ -3,6 +3,7 @@ This script takes the activity pickle dataframe as input, encodes to character b
 Only sequences greater than 30 minutes considered
 '''
 import argparse
+from multiprocessing import Process
 from collections import Counter
 #from pyprefixspan import pyprefixspan
 #from pymining import seqmining
@@ -36,6 +37,7 @@ for i,a in enumerate(activities):
     act_legend[str(i)] = a
 legend = open(args.act+'_freq_legend.txt','wb')
 print>>legend, act_legend
+act_legend = {x: act_legend[x] for x in act_legend if act_legend[x] not in ['gap','unknown']}
 users = analysis.user.unique()
 for usr in users:
     print("---------------------")

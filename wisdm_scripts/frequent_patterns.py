@@ -8,6 +8,7 @@ from collections import Counter
 #from pymining import seqmining
 #from prefixspan import PrefixSpan
 import pickle
+from collections import Counter
 from itertools import product
 from activity_plot import plot_timeline
 import pandas as pd
@@ -38,6 +39,8 @@ for i,a in enumerate(activities):
 legend = open(args.act+'_freq_legend.txt','w')
 legend.write(str(act_legend))
 legend.close()
+#now change the legend by ignoring gaps
+act_legend = {x: act_legend[x] for x in act_legend if act_legend[x]!='gap'}
 users = analysis.user.unique()
 all_patterns = []
 for usr in users:
@@ -94,6 +97,7 @@ for usr in users:
     f.close()
     #now check for count of substrings of given length:
     f = open(str(usr)+'_freq_pats.txt','w')
+    '''
     keywords = [''.join(i) for i in product(''.join(act_legend), repeat = args.len)]
     key_counts = dict.fromkeys(keywords,0)
     print key_counts
@@ -103,6 +107,14 @@ for usr in users:
     key_count = key_counts.items()
     key_count.sort(key=lambda x: x[1], reverse=True)
     print key_counts, key_count
+    '''
+    key_counts = Counter()
+    for seq in acts:
+        #find all substrings
+        substrs = [seq[i:i+args.len] for i in range(len(seq)-args.len+1)]
+        sub_counts = Counter(substrs)
+        key_counts.update(sub_counts)
+    key_count = key_counts.most_common()
     for pair in key_count:
         print>>f, pair
     f.close()
