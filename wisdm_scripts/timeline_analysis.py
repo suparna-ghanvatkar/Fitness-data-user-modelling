@@ -5,7 +5,7 @@ import pickle
 import argparse
 import pandas as pd
 import numpy as np
-from datetime import timedelta,datetime
+from datetime import timedelta,datetime,time
 from activity_plot import plot_timeline
 
 parser = argparse.ArgumentParser()
@@ -32,7 +32,10 @@ print timeline.dtypes
 #print gaps.dtypes
 activities = timeline.activity.unique()
 analysis = []
-users = timeline.user.unique()
+#temp only for selected users...plot all days
+df = pd.read_csv('wisdm_all_4hrs_users_5mins.csv')
+users = df.user.unique()
+#users = timeline.user.unique()
 for usr in users:
     user_data = timeline.loc[timeline.user==usr]
     dates = user_data.date.unique()
@@ -56,6 +59,10 @@ for usr in users:
                 #print seq_data.tail(1)
                 #print seq_data.iloc[0]
                 long_seq_data = seq_data
+        try:
+            plot_timeline(day_act, str(usr)+'_'+str(date)+'.svg')
+        except Exception as e:
+            print usr,date,e
     act_dur = [timedelta(0)]*len(activities)
     tot_act_dur = [timedelta(0)]*len(activities)
     #print long_seq_data.head()
@@ -65,7 +72,7 @@ for usr in users:
     #print plot_data.dtypes
     #plot_data['start'] = [s.time() for s in plot_data['start']]
     #plot_data['end'] = [e.time() for e in plot_data['end']]
-    plot_timeline(plot_data, str(usr)+'longest.svg')
+    #plot_timeline(plot_data, str(usr)+'longest.svg')
     for i,act in enumerate(activities):
         tot_act = user_data.loc[user_data.activity==act]['duration']
         act_data = long_seq_data.loc[long_seq_data.activity==act]['duration']
@@ -80,15 +87,16 @@ for usr in users:
     print ""
     tot_mins = [a.total_seconds()/60 for a in act_dur]
     tot_dur = sum(tot_mins)
-    prop_mins = [a*1.0/tot_dur for a in tot_mins]
+    prop_mins = [int((a*1.0/tot_dur)*100) for a in tot_mins]
     tot_all_mins = [a.total_seconds()/60 for a in tot_act_dur]
     tot_all_dur = sum(tot_all_mins)
-    prop_all_mins = [a*1.0/tot_all_dur for a in tot_all_mins]
+    prop_all_mins = [int((a*1.0/tot_all_dur)*100) for a in tot_all_mins]
     user_gaps = gaps.loc[gaps.user==usr]
     #print user_gaps['duration'].describe()
     max_gap = np.max(user_gaps.duration.dt.total_seconds())/60
     mean_gap = np.mean(user_gaps.duration.dt.total_seconds())/60
-    analysis.append([usr, len(dates), no_seqs, longest_seq, max_gap,mean_gap]+act_dur+prop_mins+tot_act_dur+[tot_all_dur]+prop_all_mins)
+    if longest_seq>timedelta(hours=4):
+        analysis.append([usr, len(dates), no_seqs, datetime.utcfromtimestamp(longest_seq.total_seconds()).strftime("%H:%M:%S"), max_gap,mean_gap]+act_dur+prop_mins+tot_act_dur+[tot_all_dur]+prop_all_mins)
 
 cols = ['user','no_days', 'no_cont_segs','longest seg','max gap time','mean gap time']+list(activities)+list(activities)+list(activities)+['total_duration']+list(activities)
 #print cols

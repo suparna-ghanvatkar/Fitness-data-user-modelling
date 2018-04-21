@@ -14,6 +14,7 @@ from operator import itemgetter
 parser = argparse.ArgumentParser()
 parser.add_argument('act', type=str, help='activity file path')
 parser.add_argument('demo',type=str,help='demographics file path')
+parser.add_argument('gap',type=int,help='gap length to ignore')
 args = parser.parse_args()
 
 act_headers = ['user','X0','X1','X2','X3','X4','X5','X6','X7','X8','X9','Y0','Y1','Y2','Y3','Y4','Y5','Y6','Y7','Y8','Y9','Z0','Z1','Z2','Z3','Z4','Z5','Z6','Z7','Z8','Z9','XAVG','YAVG','ZAVG','XPEAK','YPEAK','ZPEAK','XABSOLDEV', 'YABSOLDEV','ZABSOLDEV','XSTANDDEV','YSTANDDEV','ZSTANDDEV','Resultant','Activity', 'Time']
@@ -36,6 +37,8 @@ for usr in users:
     act_seqs[usr] = []
 per_day_usr_activity = []
 
+#users = [1193]
+
 for usr in users:
     user_act_data = activity_data.loc[activity_data.user==usr][['Activity','Time']]
     user_act_data = user_act_data.sort_values(by='Time')
@@ -50,7 +53,7 @@ for usr in users:
     print "::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
     print "USER ID:",usr
     print "Demographics:"
-    print demographics.loc[demographics.user==usr]
+#    print demographics.loc[demographics.user==usr]
     print "Total no of activities recorded:", user_act_data.shape[0]
     print "Total duration of recorded activity:", user_act_data.shape[0]*10/60, "mins"
     durations.append(user_act_data.shape[0]*10/60)
@@ -74,7 +77,7 @@ for usr in users:
             print "-------------------------------------------------------------------"
             print curr_date
             stime = curr_time - timedelta(seconds=10)
-        elif curr_time-prev_time>timedelta(minutes=30):
+        elif curr_time-prev_time>timedelta(minutes=args.gap):
             #print prev_act, prev_time-stime," ", stime, " ", prev_time
             day_dur += ((prev_time-stime).total_seconds()/60)
             cont_durations[usr].append(day_dur)
@@ -169,7 +172,7 @@ print activity_encoding
 #pickle.dump(uact,open('wisdm_userwise_activity.pickle', 'wb'))
 #pickle.dump(ugaps, open('wisdm_userwise_gaps.pickle','wb'))
 #pickle.dump(act_seqs, open('wisdm_userwiseactivity.pickle','wb'))
-
+'''
 user_wise_durs_long = {}
 print "Everyday activity duration:"
 for usr in users:
@@ -182,4 +185,4 @@ for usr in users:
     user_wise_durs_long[usr] = durs[0]
 
 print sorted(user_wise_durs_long.items(), key=itemgetter(1), reverse=True)
-
+'''

@@ -1,9 +1,19 @@
 Procedure for WISDM dataset:
 
-#transforming the raw files to features:
+#transforming the raw files to features: WISDM/unlabelled_raw or raw_labelled folders split files
 python raw_tx.py [path_to_raw_file]
 #output in [raw_file]_transformed.txt
+#now combine these transformed files into one transformed.txt using cat
+#do this for labelled, unlabelled and AR dataset
 #train the model
-python model_train.py [raw_file] [AR_file]
+python model_train.py [raw_file_transformed] [AR_file_transformed]
 #outputs in OVR.pickle and Voting.pickle
-python activity_rec
+python activity_recognition.py [unlabelled_transformed_file] [model.pickle]
+#cat and combine both labelled and unlabelled data as COMBINED_ACTIVITY in WISDM dataset folder
+python userfiltering.py [combined_act_file] [demographics_file]
+#filtered_user_act.csv and filtered_user_demo.csv created
+python user_freq_cluster.py [activity_file] [demographics_file] [gap threshold to ignore]
+#creates wisdm_activity_timeline.csv and wisdm_gaps.csv and wisdm_userwisedailyactivitytimeline.pickle and wisdm_gapdata.pickle
+python timeline_analysis.py [activity pickle][demographics pickle][output csv path name]
+#produces svg files and csv file 
+python frequent_patterns.py [activity_timeline.csv] [timeline_analysis csv] [granularity for smoothing]

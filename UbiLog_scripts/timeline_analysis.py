@@ -54,6 +54,9 @@ for usr in users:
                 #print seq_data.tail(1)
                 #print seq_data.iloc[0]
                 long_seq_data = seq_data
+        day_act['start'] = [d.time() for d in day_act['start']]
+        day_act['end'] = [d.time() for d in day_act['end']]
+        plot_timeline(day_act,str(usr)+'_'+str(date)+'.svg')
     act_dur = [timedelta(0)]*len(activities)
     tot_act_dur = [timedelta(0)]*len(activities)
     #print long_seq_data.head()
@@ -61,9 +64,10 @@ for usr in users:
     #print long_seq_data.iloc[-1]
     plot_data = long_seq_data[['activity','start','end']]
     #print plot_data.dtypes
-    plot_data['start'] = [s.time() for s in plot_data['start']]
-    plot_data['end'] = [e.time() for e in plot_data['end']]
-    plot_timeline(plot_data, str(usr)+'longest.svg')
+    #uncomment follwoing for longest seq plots only
+    #plot_data['start'] = [s.time() for s in plot_data['start']]
+    #plot_data['end'] = [e.time() for e in plot_data['end']]
+    #plot_timeline(plot_data, str(usr)+'longest.svg')
     for i,act in enumerate(activities):
         tot_act = user_data.loc[user_data.activity==act]['duration']
         act_data = long_seq_data.loc[long_seq_data.activity==act]['duration']

@@ -62,6 +62,7 @@ df.start.dt.to_pydatetime()
 df.end.dt.to_pydatetime()
 print df.dtypes
 gp.to_csv('ubiq_gaps.csv',index=False)
+df.to_csv('ubiq_activity_timeline.csv',index=False)
 print df.head()
 dates_per_user = []
 #Printing gap statistics:

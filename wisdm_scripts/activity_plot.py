@@ -79,17 +79,17 @@ if __name__=='__main__':
 
     data = pickle.load(open(args.daywise_act,'rb'))
     users = data.user.unique()
-    print data.dtypes
-    print users
+    #print data.dtypes
+    #print users
     usr = random.choice(users)
     #usr = 1320
-    print usr
+    #print usr
     user_data = data.loc[data.user==usr]
     dates = user_data.date.unique()
     dt = random.choice(dates)
     #dt = datetime.date(year=2013, month=10, day=2)
-    print dt
-    print user_data.dtypes
+    #print dt
+    #print user_data.dtypes
     plot_data = user_data.loc[user_data.date==dt][['activity','start','end']]
-    print plot_data
+    #print plot_data
     plot_timeline(plot_data,args.outpath)
