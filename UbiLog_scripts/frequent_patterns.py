@@ -95,6 +95,7 @@ for usr in users:
     f.close()
     #now check for count of substrings of given length:
     f = open(str(usr)+'_freq_pats.txt','w')
+    '''
     keywords = [''.join(i) for i in product(''.join(act_legend), repeat = args.len)]
     key_counts = dict.fromkeys(keywords,0)
     print key_counts
@@ -104,6 +105,14 @@ for usr in users:
     key_count = key_counts.items()
     key_count.sort(key=lambda x: x[1], reverse=True)
     print key_counts, key_count
+    '''
+    key_counts = Counter()
+    for seq in acts:
+        #find all substrings
+        substrs = [seq[i:i+args.len] for i in range(len(seq)-args.len+1)]
+        sub_counts = Counter(substrs)
+        key_counts.update(sub_counts)
+    key_count = key_counts.most_common()
     for pair in key_count:
         print>>f, pair
     f.close()
