@@ -7,6 +7,7 @@ from collections import Counter
 #from pyprefixspan import pyprefixspan
 #from pymining import seqmining
 #from prefixspan import PrefixSpan
+from itertools import product
 import pickle
 import pandas as pd
 import numpy as np
@@ -31,7 +32,7 @@ act_data['start'] = act_data['start'].dt.to_pydatetime()
 act_data['end'] = act_data['end'].dt.to_pydatetime()
 act_legend = {}
 for i,a in enumerate(activities):
-    act_legend[i] = a
+    act_legend[str(i)] = a
 legend = open(args.act+'_freq_legend.txt','wb')
 print>>legend, act_legend
 users = analysis.user.unique()
@@ -46,13 +47,13 @@ for usr in users:
         seqs = date_wise.seq_no.unique()
         for seq in seqs:
             print("new seq:")
-            seq_str = []
+            seq_str = ''
             act_seq = date_wise.loc[date_wise.seq_no==seq]
             act_seq = act_seq.sort_values(by='start')
             print(act_seq[['activity','duration']])
             #start_time = datetime.combine(date.today(),act_seq.iloc[0]['start'])
             start_time = act_seq.iloc[0]['start']
-            seq_str.append(activities.index(act_seq.iloc[0]['activity']))
+            seq_str += str(activities.index(act_seq.iloc[0]['activity']))
             curr_time = start_time+quant
             row = act_seq.iloc[0]
             row_i = 0
@@ -75,10 +76,10 @@ for usr in users:
                             row = act_seq.iloc[row_i]
                             act_present.append(activities.index(act_seq.iloc[0]['activity']))
                         lab,_ = Counter(act_present).most_common(1)[0]
-                        seq_str.append(lab)
+                        seq_str += str(lab)
                     else:
                         #still in this continue with this label
-                        seq_str.append(activities.index(row['activity']))
+                        seq_str += str(activities.index(row['activity']))
                     curr_time += quant
                 acts.append(seq_str)
     #print usr,":"
@@ -88,6 +89,20 @@ for usr in users:
         for item in act:
             f.write("%s " % item)
         f.write("\n")
+    f.close()
+    #now check for count of substrings of given length:
+    f = open(str(usr)+'_freq_pats.txt','w')
+    keywords = [''.join(i) for i in product(''.join(act_legend), repeat = args.len)]
+    key_counts = dict.fromkeys(keywords,0)
+    print key_counts
+    for key in keywords:
+        for seq in acts:
+            key_counts[key] += seq.count(key)
+    key_count = key_counts.items()
+    key_count.sort(key=lambda x: x[1], reverse=True)
+    print key_counts, key_count
+    for pair in key_count:
+        print>>f, pair
     f.close()
     '''
     p = pyprefixspan(acts)
