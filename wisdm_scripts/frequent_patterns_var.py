@@ -137,6 +137,9 @@ for usr in users:
     for pair in final_props:
         print>>f, pair
     f.close()
+    for pair in final_props[:30]:
+        all_pats.append(pair[0])
+    pickle.dump(all_pats,open('wisdm_patts.pickle','wb'))
     '''
     p = pyprefixspan(acts)
     p.run()
