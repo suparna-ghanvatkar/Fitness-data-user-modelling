@@ -32,7 +32,7 @@ activities = list(act_data.activity.unique())
 #act_data['end'] = [datetime.combine(date.today(),a) for _,a in act_data['end'].iteritems()]
 act_data['start'] = act_data['start'].dt.to_pydatetime()
 act_data['end'] = act_data['end'].dt.to_pydatetime()
-act_legend = {'0':'still','1':'tilting', '2':'unknown','3':'invehicle','4':'onfoot','5':'gap','6':'onbicycle'}
+act_legend = {'still':'0','tilting':'0', 'unknown':'1','invehicle':'2','onfoot':'3','gap':'4','onbicycle':'5'}
 #for i,a in enumerate(activities):
 #    act_legend[str(i)] = a
 legend = open(args.act+'_freq_legend.txt','wb')
@@ -42,7 +42,6 @@ for i, act in act_legend.iteritems():
         gap_ind = i
     elif act=='unknown':
         unk_ind = i
-act_to_sed = {'0':'0','1':'0','3':'0','4':'1','5':'1'}
 #act_legend = {x: act_legend[x] for x in act_legend if act_legend[x] not in ['gap','unknown']}
 users = analysis.user.unique()
 for usr in users:
@@ -59,36 +58,37 @@ for usr in users:
             seq_str = ''
             act_seq = date_wise.loc[date_wise.seq_no==seq]
             act_seq = act_seq.sort_values(by='start')
-            print(act_seq[['activity','duration']])
+            #print(act_seq[['activity','duration']])
             #start_time = datetime.combine(date.today(),act_seq.iloc[0]['start'])
             start_time = act_seq.iloc[0]['start']
-            seq_str += str(activities.index(act_seq.iloc[0]['activity']))
+            seq_str += act_legend[act_seq.iloc[0]['activity']]
             curr_time = start_time+quant
             row = act_seq.iloc[0]
             row_i = 0
             end = act_seq.iloc[-1]['end']
-            if end-start_time >timedelta(minutes=30):
-                if start_time.time()<time(hour =7):
+            if end-start_time >timedelta(minutes=30):   #if sequence greater than 30 minutes
+                if start_time.time()<time(hour =7): #after 7 am 
                     if end.time()<time(hour=7):
                         continue
                     while row['end'].time()<time(hour=7):
-                        print row
+                        #print row
                         row_i += 1
                         row = act_seq.iloc[row_i]
                     start_time = time(hour=7)
+                    curr_time = start_time
                 while curr_time<end:
                     if curr_time>row['end']:
                         #compare which part greater label that - majority vote
-                        act_present = [activities.index(act_seq.iloc[0]['activity'])]
+                        act_present = [act_legend[row['activity']]
                         while curr_time>row['end']:
                             row_i += 1
                             row = act_seq.iloc[row_i]
-                            act_present.append(activities.index(act_seq.iloc[0]['activity']))
+                            act_present.append(act_legend[row['activity']])
                         lab,_ = Counter(act_present).most_common(1)[0]
                         seq_str += str(lab)
                     else:
                         #still in this continue with this label
-                        seq_str += str(activities.index(row['activity']))
+                        seq_str += act_legend[row['activity']]
                     curr_time += quant
                 acts.append(seq_str)
     #print usr,":"

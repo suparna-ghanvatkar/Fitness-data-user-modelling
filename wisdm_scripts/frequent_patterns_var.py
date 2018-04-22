@@ -3,16 +3,17 @@ This script takes the activity pickle dataframe as input, encodes to character b
 Only sequences greater than 30 minutes considered
 '''
 import argparse
-from multiprocessing import Process
 from collections import Counter
 #from pyprefixspan import pyprefixspan
 #from pymining import seqmining
 #from prefixspan import PrefixSpan
-from itertools import product
 import pickle
+from collections import Counter
+from itertools import product
+from activity_plot import plot_timeline
 import pandas as pd
 import numpy as np
-from datetime import timedelta, datetime, date, time
+from datetime import timedelta, datetime, date
 
 parser = argparse.ArgumentParser()
 parser.add_argument('act',type=str,help='csv activity user file')
@@ -31,35 +32,40 @@ activities = list(act_data.activity.unique())
 #act_data['end'] = [datetime.combine(date.today(),a) for _,a in act_data['end'].iteritems()]
 act_data['start'] = act_data['start'].dt.to_pydatetime()
 act_data['end'] = act_data['end'].dt.to_pydatetime()
-act_legend = {'still':'0','tilting':'0', 'unknown':'1','invehicle':'2','onfoot':'3','gap':'4','onbicycle':'5'}
+act_legend = {'Standing':'0','gap':'1','Sitting':'2','Walking':'3','Stairs':'4','Jogging':'5','LyingDown':'6'}
 #for i,a in enumerate(activities):
 #    act_legend[str(i)] = a
-legend = open(args.act+'_freq_legend.txt','wb')
-print>>legend, act_legend
-for act,i in act_legend.iteritems():
+legend = open(args.act+'_freq_legend.txt','w')
+legend.write(str(act_legend))
+legend.close()
+for i, act in act_legend.iteritems():
     if act=='gap':
         gap_ind = i
-    elif act=='unknown':
-        unk_ind = i
-act_to_sed = {'0':'0','1':'0','3':'0','4':'1','5':'1'}
-#act_legend = {x: act_legend[x] for x in act_legend if act_legend[x] not in ['gap','unknown']}
+#now change the legend by ignoring gaps
+#act_legend = {x: act_legend[x] for x in act_legend if act_legend[x]!='gap'}
 users = analysis.user.unique()
+all_patterns = []
 for usr in users:
     print("---------------------")
     print(usr)
     acts = []
-    prop_counts = []
     user_data = act_data.loc[act_data.user==usr]
     dates = user_data.date.unique()
     for date in dates:
         date_wise = user_data.loc[user_data.date==date]
+        date_wise = date_wise.sort_values(by='date')
+        #if date_wise.iloc[-1]['end']-date_wise.iloc[0]['start'] > timedelta(minutes=30):
+            #plot_data = date_wise[['activity','start','end']]
+            #plot_data['start'] = [s.time() for s in plot_data['start']]
+            #plot_data['end'] = [s.time() for s in plot_data['end']]
+            #plot_timeline(plot_data,str(usr)+'_'+pd.to_datetime(date).strftime("Y-%m-%d")+'.svg')
         seqs = date_wise.seq_no.unique()
         for seq in seqs:
             print("new seq:")
             seq_str = ''
             act_seq = date_wise.loc[date_wise.seq_no==seq]
             act_seq = act_seq.sort_values(by='start')
-            #print(act_seq[['activity','duration']])
+            print(act_seq[['activity','duration']])
             #start_time = datetime.combine(date.today(),act_seq.iloc[0]['start'])
             start_time = act_seq.iloc[0]['start']
             seq_str += act_legend[act_seq.iloc[0]['activity']]
@@ -68,15 +74,6 @@ for usr in users:
             row_i = 0
             end = act_seq.iloc[-1]['end']
             if end-start_time >timedelta(minutes=30):
-                if start_time.time()<time(hour =7):
-                    if end.time()<time(hour=7):
-                        continue
-                    while row['end'].time()<time(hour=7):
-                        #print row
-                        row_i += 1
-                        row = act_seq.iloc[row_i]
-                    start_time = time(hour=7)
-                    curr_time = start_time
                 while curr_time<end:
                     if curr_time>row['end']:
                         #compare which part greater label that - majority vote
@@ -86,7 +83,7 @@ for usr in users:
                             row = act_seq.iloc[row_i]
                             act_present.append(act_legend[row['activity']])
                         lab,_ = Counter(act_present).most_common(1)[0]
-                        seq_str += lab
+                        seq_str += str(lab)
                     else:
                         #still in this continue with this label
                         seq_str += act_legend[row['activity']]
@@ -118,7 +115,7 @@ for usr in users:
         tot_seqs = 0
         for seq in acts:
             #find all substrings
-            substrs = [seq[i:i+k] for i in range(len(seq)-k) if (gap_ind not in seq[i:i+k]) and (unk_ind not in seq[i:i+k])]
+            substrs = [seq[i:i+k] for i in range(len(seq)-k) if (gap_ind not in seq[i:i+k])]
             tot_seqs += len(substrs)
             sub_counts = Counter(substrs)
             key_counts.update(sub_counts)
@@ -147,6 +144,11 @@ for usr in users:
     frq_seqs = seqmining.freq_seq_enum(acts, 4)
     print(sorted(frq_seqs))
     ps = PrefixSpan(acts)
-    print(ps.frequent(3))
-    print(ps.topk(5))
+    #print(ps.frequent(3))
+    ps.minlen=4
+    ps.maxlen=4
+    freq_pats = ps.topk(10)
+    for matches,patt in freq_pats:
+        all_patterns.append(patt)
+pickle.dump(all_patterns, open('wisdm_freq_patts.pickle','wb'), 2)
     '''

@@ -33,9 +33,9 @@ activities = list(act_data.activity.unique())
 #act_data['end'] = [datetime.combine(date.today(),a) for _,a in act_data['end'].iteritems()]
 act_data['start'] = act_data['start'].dt.to_pydatetime()
 act_data['end'] = act_data['end'].dt.to_pydatetime()
-act_legend = {}
-for i,a in enumerate(activities):
-    act_legend[str(i)] = a
+act_legend = {'Standing':'0','gap':'1','Sitting':'2','Walking':'3','Stairs':'4','Jogging':'5','LyingDown':'6'}
+#for i,a in enumerate(activities):
+#    act_legend[str(i)] = a
 legend = open(args.act+'_freq_legend.txt','w')
 legend.write(str(act_legend))
 legend.close()
@@ -69,7 +69,7 @@ for usr in users:
             print(act_seq[['activity','duration']])
             #start_time = datetime.combine(date.today(),act_seq.iloc[0]['start'])
             start_time = act_seq.iloc[0]['start']
-            seq_str += str(activities.index(act_seq.iloc[0]['activity']))
+            seq_str += act_legend[act_seq.iloc[0]['activity']]
             curr_time = start_time+quant
             row = act_seq.iloc[0]
             row_i = 0
@@ -78,16 +78,16 @@ for usr in users:
                 while curr_time<end:
                     if curr_time>row['end']:
                         #compare which part greater label that - majority vote
-                        act_present = [activities.index(act_seq.iloc[0]['activity'])]
+                        act_present = [act_legend[row['activity']]]
                         while curr_time>row['end']:
                             row_i += 1
                             row = act_seq.iloc[row_i]
-                            act_present.append(activities.index(act_seq.iloc[0]['activity']))
+                            act_present.append(act_legend[row['activity']])
                         lab,_ = Counter(act_present).most_common(1)[0]
                         seq_str += str(lab)
                     else:
                         #still in this continue with this label
-                        seq_str += str(activities.index(row['activity']))
+                        seq_str += act_legend[row['activity']]
                     curr_time += quant
                 acts.append(seq_str)
     #print usr,":"
@@ -118,7 +118,10 @@ for usr in users:
         sub_counts = Counter(substrs)
         key_counts.update(sub_counts)
     key_count = key_counts.most_common()
-    for pair in key_count:
+    prop_counts = []
+    for (key,val) in key_count:
+        prop_counts.append([key,val*1.0/tot_seqs])
+    for pair in prop_counts:
         print>>f, pair
     f.close()
     '''
