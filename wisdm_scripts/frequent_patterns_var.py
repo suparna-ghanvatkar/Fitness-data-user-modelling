@@ -38,7 +38,7 @@ act_legend = {'Standing':'0','gap':'1','Sitting':'2','Walking':'3','Stairs':'4',
 legend = open(args.act+'_freq_legend.txt','w')
 legend.write(str(act_legend))
 legend.close()
-for i, act in act_legend.iteritems():
+for act,i in act_legend.iteritems():
     if act=='gap':
         gap_ind = i
 #now change the legend by ignoring gaps
@@ -49,6 +49,7 @@ for usr in users:
     print("---------------------")
     print(usr)
     acts = []
+    prop_counts = []
     user_data = act_data.loc[act_data.user==usr]
     dates = user_data.date.unique()
     for date in dates:
@@ -123,9 +124,9 @@ for usr in users:
         for (key,val) in key_count:
             prop_counts.append([key,val*1.0/tot_seqs])
     prop_counts = sorted(prop_counts, key=lambda x: x[1], reverse=True)
-    chunk_size = len(prop_counts)/3
+    chunk_size = len(prop_counts)/5
     final_props = []
-    for i in range(3):
+    for i in range(5):
         patts = [x[0] for x in prop_counts[(i*chunk_size):(i*chunk_size)+chunk_size]]
         #fil_pats = []
         for i,p in enumerate(patts):

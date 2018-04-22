@@ -39,7 +39,7 @@ act_legend = {'Standing':'0','gap':'1','Sitting':'2','Walking':'3','Stairs':'4',
 legend = open(args.act+'_freq_legend.txt','w')
 legend.write(str(act_legend))
 legend.close()
-for i, act in act_legend.iteritems():
+for act,i in act_legend.iteritems():
     if act=='gap':
         gap_ind = i
 #now change the legend by ignoring gaps

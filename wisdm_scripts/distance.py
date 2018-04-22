@@ -22,7 +22,7 @@ def bring_to_len(pat, l):
     return new_pat
 
 def distance(pat1, pat2):
-    act_sed = {0:0,2:0,3:1,5:1}
+    act_sed = {0:1,2:0,3:1,4:1,5:1,6:0}
     #strip of all -1
     pat1 = [p for p in pat1 if p!=-1]
     pat2 = [p for p in pat2 if p!=-1]

@@ -25,6 +25,7 @@ analysis = pd.read_csv(args.analysis)
 act_data = pd.read_csv(args.act, parse_dates=['date','start','end'])
 act_data['duration'] = pd.to_timedelta(act_data['duration'])
 
+all_pats = []
 quant = timedelta(seconds = args.gran)
 activities = list(act_data.activity.unique())
 #act_data['start'] = [datetime.combine(date.today(),a) for _,a in act_data['start'].iteritems()]
@@ -75,8 +76,8 @@ for usr in users:
                         #print row
                         row_i += 1
                         row = act_seq.iloc[row_i]
-                    start_time = time(hour=7)
-                    curr_time = start_time
+                    #start_time = time(hour=7)
+                    curr_time = curr_time.replace(hour=7, minute=0, second=0)
                 while curr_time<end:
                     if curr_time>row['end']:
                         #compare which part greater label that - majority vote
@@ -139,6 +140,9 @@ for usr in users:
     for pair in final_props:
         print>>f, pair
     f.close()
+    for pair in final_props[:30]:
+        all_pats.append(pair[0])
+    pickle.dump(all_pats,open('ubiqlog_patts.pickle','wb'))
     '''
     p = pyprefixspan(acts)
     p.run()

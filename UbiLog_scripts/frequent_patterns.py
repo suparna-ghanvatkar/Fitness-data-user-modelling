@@ -37,7 +37,7 @@ act_legend = {'still':'0','tilting':'0', 'unknown':'1','invehicle':'2','onfoot':
 #    act_legend[str(i)] = a
 legend = open(args.act+'_freq_legend.txt','wb')
 print>>legend, act_legend
-for i, act in act_legend.iteritems():
+for act,i in act_legend.iteritems():
     if act=='gap':
         gap_ind = i
     elif act=='unknown':
@@ -67,19 +67,19 @@ for usr in users:
             row_i = 0
             end = act_seq.iloc[-1]['end']
             if end-start_time >timedelta(minutes=30):   #if sequence greater than 30 minutes
-                if start_time.time()<time(hour =7): #after 7 am 
+                if start_time.time()<time(hour =7): #after 7 am
                     if end.time()<time(hour=7):
                         continue
                     while row['end'].time()<time(hour=7):
                         #print row
                         row_i += 1
                         row = act_seq.iloc[row_i]
-                    start_time = time(hour=7)
-                    curr_time = start_time
+                    #start_time = time(hour=7)
+                    curr_time = curr_time.replace(hour=7, minute=0, second=0)
                 while curr_time<end:
                     if curr_time>row['end']:
                         #compare which part greater label that - majority vote
-                        act_present = [act_legend[row['activity']]
+                        act_present = [act_legend[row['activity']]]
                         while curr_time>row['end']:
                             row_i += 1
                             row = act_seq.iloc[row_i]
