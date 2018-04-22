@@ -21,6 +21,7 @@ parser.add_argument('analysis',type=str,help='csv file to timeline analysis with
 parser.add_argument('gran',type=int,help='seconds to consider as quantum')
 args = parser.parse_args()
 
+all_pats = []
 analysis = pd.read_csv(args.analysis)
 #act_data = pickle.load(open(args.act,'rb'))
 act_data = pd.read_csv(args.act, parse_dates=['date','start','end'])
@@ -124,9 +125,9 @@ for usr in users:
         for (key,val) in key_count:
             prop_counts.append([key,val*1.0/tot_seqs])
     prop_counts = sorted(prop_counts, key=lambda x: x[1], reverse=True)
-    chunk_size = len(prop_counts)/5
+    chunk_size = len(prop_counts)/6
     final_props = []
-    for i in range(5):
+    for i in range(6):
         patts = [x[0] for x in prop_counts[(i*chunk_size):(i*chunk_size)+chunk_size]]
         #fil_pats = []
         for i,p in enumerate(patts):
