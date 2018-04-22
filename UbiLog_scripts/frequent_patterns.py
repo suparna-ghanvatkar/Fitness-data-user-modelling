@@ -32,12 +32,18 @@ activities = list(act_data.activity.unique())
 #act_data['end'] = [datetime.combine(date.today(),a) for _,a in act_data['end'].iteritems()]
 act_data['start'] = act_data['start'].dt.to_pydatetime()
 act_data['end'] = act_data['end'].dt.to_pydatetime()
-act_legend = {}
-for i,a in enumerate(activities):
-    act_legend[str(i)] = a
+act_legend = {'0':'still','1':'tilting', '2':'unknown','3':'invehicle','4':'onfoot','5':'gap','6':'onbicycle'}
+#for i,a in enumerate(activities):
+#    act_legend[str(i)] = a
 legend = open(args.act+'_freq_legend.txt','wb')
 print>>legend, act_legend
-act_legend = {x: act_legend[x] for x in act_legend if act_legend[x] not in ['gap','unknown']}
+for i, act in act_legend.iteritems():
+    if act=='gap':
+        gap_ind = i
+    elif act=='unknown':
+        unk_ind = i
+act_to_sed = {'0':'0','1':'0','3':'0','4':'1','5':'1'}
+#act_legend = {x: act_legend[x] for x in act_legend if act_legend[x] not in ['gap','unknown']}
 users = analysis.user.unique()
 for usr in users:
     print("---------------------")
@@ -107,13 +113,18 @@ for usr in users:
     print key_counts, key_count
     '''
     key_counts = Counter()
+    tot_seqs = 0
     for seq in acts:
         #find all substrings
-        substrs = [seq[i:i+args.len] for i in range(len(seq)-args.len+1)]
+        substrs = [seq[i:i+args.len] for i in range(len(seq)-args.len+1) if (gap_ind not in seq[i:i+args.len]) and (unk_ind not in seq[i:i+args.len])]
+        tot_seqs += len(substrs)
         sub_counts = Counter(substrs)
         key_counts.update(sub_counts)
     key_count = key_counts.most_common()
-    for pair in key_count:
+    prop_counts = []
+    for (key,val) in key_count:
+        prop_counts.append([key,val*1.0/tot_seqs])
+    for pair in prop_counts:
         print>>f, pair
     f.close()
     '''
