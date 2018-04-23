@@ -8,3 +8,11 @@
 *.svg
 *.pyc
 UbiLog_scripts/frequent_patterns.py_multi_back
+
+\.ipynb_checkpoints/
+
+*.rtf
+
+*.docx
+
+sequenceminer\.egg-info/

@@ -83,6 +83,7 @@ for usr in users:
     tot_mins = [a.total_seconds()/60 for a in act_dur]
     tot_dur = sum(tot_mins)
     prop_mins = [a*1.0/tot_dur for a in tot_mins]
+    tot_mins = [ datetime.utcfromtimestamp(a.total_seconds()).strftime("%H:%M:%S") for a in act_dur]
     tot_all_mins = [a.total_seconds()/60 for a in tot_act_dur]
     tot_all_dur = sum(tot_all_mins)
     prop_all_mins = [a*1.0/tot_all_dur for a in tot_all_mins]
@@ -90,7 +91,7 @@ for usr in users:
     #print user_gaps['duration'].describe()
     max_gap = np.max(user_gaps.duration.dt.total_seconds())/60
     mean_gap = np.mean(user_gaps.duration.dt.total_seconds())/60
-    analysis.append([usr, len(dates), no_seqs, longest_seq, max_gap,mean_gap]+act_dur+prop_mins+tot_act_dur+[tot_all_dur]+prop_all_mins)
+    analysis.append([usr, len(dates), no_seqs, datetime.utcfromtimestamp(longest_seq.total_seconds()).strftime("%H:%M:%S"), datetime.utcfromtimestamp(max_gap*60).strftime("%H:%M:%S"), datetime.utcfromtimestamp(mean_gap*60).strftime("%H:%M:%S")]+tot_mins+prop_mins+tot_act_dur+[ datetime.utcfromtimestamp(tot_all_dur*60) ]+prop_all_mins)
 
 cols = ['user','no_days', 'no_cont_segs','longest seg','max gap time','mean gap time']+list(activities)+list(activities)+list(activities)+['total_duration']+list(activities)
 #print cols
