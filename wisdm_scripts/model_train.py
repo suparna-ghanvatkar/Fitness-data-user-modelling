@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 import argparse
 from sklearn.externals import joblib
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 from sklearn.utils import shuffle
 from sklearn.svm import LinearSVC
 from sklearn.ensemble import RandomForestClassifier
@@ -28,7 +28,10 @@ def scores_per_class(labels, predicted):
         pred_index = classes.index(predicted[i])
         confusion_mat[lab_index][pred_index] += 1
     accuracy = accuracy_score(labels, predicted)
-    return (confusion_mat, accuracy)
+    precision = precision_score(labels, predicted, average='macro')
+    recall = recall_score(labels, predicted, average='macro')
+    f1 = f1_score(labels,predicted,average='macro')
+    return (confusion_mat, accuracy,precision, recall, f1)
 
 def normal_cross_val(Features, Labels, test_fold_no, model):
     #10 folds exist in the features and Lables already and test fold number is the number ot test with
@@ -132,10 +135,25 @@ gbt = GradientBoostingClassifier()
 ovr = OneVsRestClassifier(RandomForestClassifier())
 eclf = VotingClassifier(estimators=[('gbt',gbt),('ovr',ovr)], voting='soft')
 acc_RF = []
+prec_RF = []
+rec_RF = []
+f1_RF = []
 acc_MLP = []
+prec_MLP = []
+rec_MLP = []
+f1_MLP = []
 acc_GBT = []
+prec_GBT = []
+rec_GBT = []
+f1_GBT = []
 acc_ovr = []
+prec_ovr = []
+rec_ovr = []
+f1_ovr = []
 acc_ECLF = []
+prec_ECLF = []
+rec_ECLF = []
+f1_ECLF=  []
 acc_RF_aug = []
 acc_MLP_aug = []
 acc_GBT_aug = []
@@ -144,52 +162,67 @@ acc_ECLF_aug = []
 for i in range(10):
     print "cross val results for set ", str(i)
     print "Random forest:"
-    conf, a = normal_cross_val(Features_10_folds, Labels_10_folds, i, clf)
+    conf, a, p, r ,f = normal_cross_val(Features_10_folds, Labels_10_folds, i, clf)
     acc_RF.append(a)
+    prec_RF.append(p)
+    rec_RF.append(r)
+    f1_RF.append(f)
     print conf
     print "Accuracy:", a
     print "MLP:"
-    conf, a = normal_cross_val(Features_10_folds, Labels_10_folds, i, mlp)
+    conf, a, p ,r, f = normal_cross_val(Features_10_folds, Labels_10_folds, i, mlp)
     acc_MLP.append(a)
+    prec_MLP.append(p)
+    rec_MLP.append(r)
+    f1_MLP.append(f)
     print conf
     print "Accuracy:", a
     print "Gradient Boosted Trees:"
-    conf, a = normal_cross_val(Features_10_folds, Labels_10_folds, i, gbt)
+    conf, a, p ,r, f = normal_cross_val(Features_10_folds, Labels_10_folds, i, gbt)
     acc_GBT.append(a)
+    prec_GBT.append(p)
+    rec_GBT.append(r)
+    f1_GBT.append(f)
     print conf
     print "Accuracy:", a
     print "Linear Classifier with ovr training"
-    conf, a = normal_cross_val(Features_10_folds, Labels_10_folds, i , ovr)
+    conf, a, p, r, f = normal_cross_val(Features_10_folds, Labels_10_folds, i , ovr)
     acc_ovr.append(a)
+    prec_ovr.append(p)
+    rec_ovr.append(r)
+    f1_ovr.append(f)
     print conf
     print "Accuracy:", a
     print "Voting Clf for GBT and ovr:"
-    conf, a = normal_cross_val(Features_10_folds, Labels_10_folds, i, eclf)
+    conf, a, p, r, f = normal_cross_val(Features_10_folds, Labels_10_folds, i, eclf)
     acc_ECLF.append(a)
+    prec_ECLF.append(p)
+    rec_ECLF.append(r)
+    f1_ECLF.append(f)
     print conf
     print "Accuracy:", a
     print "RF with AR augumented:"
-    conf, a = balanced_cross_val(Features_10_folds, Labels_10_folds, i, clf, AR)
+    conf, ai, _,_,_ = balanced_cross_val(Features_10_folds, Labels_10_folds, i, clf, AR)
     acc_RF_aug.append(a)
     print conf
     print "Accuracy:", a
     print "MLP with AR augumented:"
-    conf, a = balanced_cross_val(Features_10_folds, Labels_10_folds, i, mlp, AR)
+    conf, a,_,_,_ = balanced_cross_val(Features_10_folds, Labels_10_folds, i, mlp, AR)
     acc_MLP_aug.append(a)
     print conf
     print "Accuracy:", a
     print "GBT with augumented AR:"
-    conf, a = balanced_cross_val(Features_10_folds, Labels_10_folds, i, gbt, AR)
+    conf, a,_,_,_ = balanced_cross_val(Features_10_folds, Labels_10_folds, i, gbt, AR)
     acc_GBT_aug.append(a)
     print conf
     print "Accuracy:", a
     print "Linear Classifier with ovr training and augumented AR"
-    conf, a = balanced_cross_val(Features_10_folds, Labels_10_folds, i, ovr, AR)
+    conf, a,_,_,_ = balanced_cross_val(Features_10_folds, Labels_10_folds, i, ovr, AR)
     acc_ovr_aug.append(a)
     print conf
     print "Accuracy:", a
     print "Voting Classifier with GBT and ovr and augumented AR"
-    conf, a = balanced_cross_val(Features_10_folds, Labels_10_folds, i, eclf, AR)
+    conf, a,_,_,_ = balanced_cross_val(Features_10_folds, Labels_10_folds, i, eclf, AR)
     acc_ECLF_aug.append(a)
     print conf
     print "Accuracy:", a
@@ -205,6 +238,13 @@ print "MLP augumented:", sum(acc_MLP_aug)/10.0
 print "GBT augumented:", sum(acc_GBT_aug)/10.0
 print "ovr augumented:", sum(acc_ovr_aug)/10.0
 print "Voting augumented:", sum(acc_ECLF_aug)/10.0
+
+print " classifiers "," Accuracy "," Precision "," Recall "," F1 score "
+print "Random Forest:", np.mean(acc_RF),"(",np.std(acc_RF),")", " ",np.mean(prec_RF),"(",np.std(prec_RF),")", " ",np.mean(rec_RF),"(",np.std(rec_RF),")"," ",np.mean(f1_RF),"(",np.std(f1_RF),")"
+print "MLP:", np.mean(acc_MLP),"(",np.std(acc_MLP),")", " ",np.mean(prec_MLP),"(",np.std(prec_MLP),")", " ",np.mean(rec_MLP),"(",np.std(rec_MLP),")"," ",np.mean(f1_MLP),"(",np.std(f1_MLP),")"
+print "Gradient Boosted Trees:", np.mean(acc_GBT),"(",np.std(acc_GBT),")", " ",np.mean(prec_GBT),"(",np.std(prec_GBT),")", " ",np.mean(rec_GBT),"(",np.std(rec_GBT),")"," ",np.mean(f1_GBT),"(",np.std(f1_GBT),")"
+print "One vs Rest with RF:", np.mean(acc_ovr),"(",np.std(acc_ovr),")", " ",np.mean(prec_ovr),"(",np.std(prec_ovr),")", " ",np.mean(rec_ovr),"(",np.std(rec_ovr),")"," ",np.mean(f1_ovr),"(",np.std(f1_ovr),")"
+print "Voting clf (GBT, OVR):", np.mean(acc_ECLF),"(",np.std(acc_ECLF),")", " ",np.mean(prec_ECLF),"(",np.std(prec_ECLF),")", " ",np.mean(rec_ECLF),"(",np.std(rec_ECLF),")"," ",np.mean(f1_ECLF),"(",np.std(f1_ECLF),")"
 
 Feature = feats[feats.columns[1:44]]
 Label = feats[feats.columns[44]]
