@@ -86,8 +86,16 @@ for usr in users:
                             row_i += 1
                             row = act_seq.iloc[row_i]
                             act_present.append(act_legend[row['activity']])
-                        lab,_ = Counter(act_present).most_common(1)[0]
-                        seq_str += lab
+                        acts_counts = Counter(act_present).most_common()
+                        top_score = acts_counts[0][1]
+                        top_acts = [a for a,val in acts_counts if val==top_score]
+                        if len(top_acts)>1:
+                            top_acts = [a for a in top_acts ]
+                            lab = random.choice(top_acts)
+                            rand_nos += 1
+                        else:
+                            lab = top_acts[0]
+                        seq_str += str(lab)
                     else:
                         #still in this continue with this label
                         seq_str += act_legend[row['activity']]
@@ -114,19 +122,52 @@ for usr in users:
     key_count.sort(key=lambda x: x[1], reverse=True)
     print key_counts, key_count
     '''
-    for k in range(4,25,2):
+    seq_time = {}
+    for k in range(25,4,-1):
         key_counts = Counter()
         tot_seqs = 0
-        for seq in acts:
+        for i, seq in enumerate(acts):
             #find all substrings
-            substrs = [seq[i:i+k] for i in range(len(seq)-k) if (gap_ind not in seq[i:i+k]) and (unk_ind not in seq[i:i+k])]
+            strt_time = time_all_seq[i]
+            substrs = [(seq[i:i+k],strt_time+timedelta(minutes=i)) for i in range(len(seq)-k) if all(not is_subseq(seq[i:i+k],s,strt_time+timedelta(minutes=i)) for s in prop_counts)]
+#            times = [strt_time+timedelta(minute=i) for i in range(len(seq)-k)]
+            times = []
+            temp = []
+            for sub,time in substrs:
+                temp.append(sub)
+                times.append(time)
+            substrs = temp
             tot_seqs += len(substrs)
             sub_counts = Counter(substrs)
+            this_time = {}  #dict of occurence of each pf substring timing occ
+            for s in sub_counts.keys():
+                this_time[s] = []
+                for i,q in enumerate(substrs):
+                    if q==s:
+                        this_time[s].append(times[i])
             key_counts.update(sub_counts)
+            #also update the global timing info seq
+            for key,val in this_time.iteritems():
+                if key in seq_time.keys():
+                    seq_time[key].extend(val)
+                else:
+                    seq_time[key] = val
         key_count = key_counts.most_common()
         for (key,val) in key_count:
-            prop_counts.append([key,val*1.0/tot_seqs])
+            if (val*100)/tot_seqs :
+                prop_counts.append([key,val*100.0/tot_seqs,seq_time[key]])
     prop_counts = sorted(prop_counts, key=lambda x: x[1], reverse=True)
+    for seq, prop, time in prop_counts:
+        times = [time[0]]
+        for t in time:
+            if (t not in times) and (all(t+timedelta(minutes=i) not in times for i in range(5))) and all(t-timedelta(minutes=i) not in times for i in range(5)):
+                times.append(t)
+                print type(t)
+        times = [datetime.time(ti).strftime("%H:%M:%S") for ti in times]
+        text = str(seq)+' '+str(prop)+' '+str(times)+'\n'
+        f.write(text)
+    f.close()
+    '''
     chunk_size = len(prop_counts)/3
     final_props = []
     for i in range(3):
@@ -140,9 +181,10 @@ for usr in users:
     for pair in final_props:
         print>>f, pair
     f.close()
-    for pair in final_props[:30]:
-        all_pats.append(pair[0])
-    pickle.dump(all_pats,open('ubiqlog_patts.pickle','wb'))
+    '''
+    #for pair in final_props[:30]:
+    #    all_pats.append(pair[0])
+    #pickle.dump(all_pats,open('ubiqlog_patts.pickle','wb'))
     '''
     p = pyprefixspan(acts)
     p.run()

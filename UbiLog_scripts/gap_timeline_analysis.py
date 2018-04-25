@@ -24,6 +24,7 @@ for usr in users:
     for date in dates:
         #print "Date:", date
         date_act = user_act.loc[user_act.Date==date]
+        date_act = date_act[date_act.Activity!='unknown']
         date_act = date_act.sort_values(by='Start')
         stime = date_act.iloc[0]['Start']
         gstime = stime
