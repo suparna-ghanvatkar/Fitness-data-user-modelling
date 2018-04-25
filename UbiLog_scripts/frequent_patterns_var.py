@@ -3,6 +3,7 @@ This script takes the activity pickle dataframe as input, encodes to character b
 Only sequences greater than 30 minutes considered
 '''
 import argparse
+import random
 from multiprocessing import Process
 from collections import Counter
 #from pyprefixspan import pyprefixspan
@@ -45,10 +46,13 @@ for act,i in act_legend.iteritems():
 act_to_sed = {'0':'0','1':'0','3':'0','4':'1','5':'1'}
 #act_legend = {x: act_legend[x] for x in act_legend if act_legend[x] not in ['gap','unknown']}
 users = analysis.user.unique()
+rand_nos = 0
+tot_nos = 0
 for usr in users:
     print("---------------------")
     print(usr)
     acts = []
+    time_all_seq = []
     prop_counts = []
     user_data = act_data.loc[act_data.user==usr]
     dates = user_data.date.unique()
@@ -101,6 +105,7 @@ for usr in users:
                         seq_str += act_legend[row['activity']]
                     curr_time += quant
                 acts.append(seq_str)
+                time_all_seq.append(start_time)
     #print usr,":"
     #print acts
     f = open(str(usr)+'_act_seq.txt','w')
