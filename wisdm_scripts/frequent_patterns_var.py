@@ -160,7 +160,7 @@ for usr in users:
         key_count = key_counts.most_common()
         for (key,val) in key_count:
             if (val*100)/tot_seqs :
-                prop_counts.append([key,val*100/tot_seqs,seq_time[key]])
+                prop_counts.append([key,val*100.0/tot_seqs,seq_time[key]])
     prop_counts = sorted(prop_counts, key=lambda x: x[1], reverse=True)
     #chunk_size = len(prop_counts)/6
     #final_props = []

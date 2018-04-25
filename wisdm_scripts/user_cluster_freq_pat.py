@@ -82,7 +82,7 @@ for usr in users:
             day_dur += ((prev_time-stime).total_seconds()/60)
             cont_durations[usr].append(day_dur)
             per_day_usr_activity.append([usr, prev_date, seq, prev_act, prev_time-stime, stime.time(),prev_time.time()])
-            #print "gap", curr_time-prev_time, " ", prev_time, " ", curr_time
+            print "gap", curr_time-prev_time, " ", prev_time, " ", curr_time
             day_dur = 0
             seq += 1
             ugaps.append([usr, prev_date, curr_time-prev_time,prev_time,curr_time])

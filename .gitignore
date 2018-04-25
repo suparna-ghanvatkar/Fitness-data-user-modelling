@@ -17,3 +17,4 @@ UbiLog_scripts/frequent_patterns.py_multi_back
 
 sequenceminer\.egg-info/
 *_all
+*.png
