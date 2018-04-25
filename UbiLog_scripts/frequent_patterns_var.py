@@ -15,6 +15,18 @@ import pandas as pd
 import numpy as np
 from datetime import timedelta, datetime, date, time
 
+def is_subseq(seq, old_seq, start):
+    if seq not in old_seq[0]:
+        return False
+    else:
+        slen = len(seq)
+        olen = len(old_seq[0])
+        times = old_seq[2]
+        for time in times:
+            if start>=time and (start+timedelta(minutes=slen))<=(time+timedelta(minutes=olen)):
+                return True
+    return False
+
 parser = argparse.ArgumentParser()
 parser.add_argument('act',type=str,help='csv activity user file')
 parser.add_argument('analysis',type=str,help='csv file to timeline analysis with users to be considered')
