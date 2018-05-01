@@ -36,6 +36,7 @@ analysis = []
 #df = pd.read_csv('wisdm_all_4hrs_users_5mins.csv')
 #users = df.user.unique()
 users = timeline.user.unique()
+print len(users)
 for usr in users:
     user_data = timeline.loc[timeline.user==usr]
     dates = user_data.date.unique()

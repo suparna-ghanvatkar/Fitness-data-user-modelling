@@ -38,7 +38,7 @@ for usr in users:
 per_day_usr_activity = []
 
 #users = [1193]
-
+print len(users)
 for usr in users:
     user_act_data = activity_data.loc[activity_data.user==usr][['Activity','Time']]
     user_act_data = user_act_data.sort_values(by='Time')

@@ -11,10 +11,11 @@ parser = argparse.ArgumentParser()
 parser.add_argument('pat_file',type=str,help='path to freq patt txt file')
 args = parser.parse_args()
 
-act_legend = {'2':'Sitting','0':'Standing','3':'Walking','4':'Stairs','5':'Jogging','6':'LyingDown','1':'gap'}
-act_color = {'2':'Red','0':'Green','3':'Yellow','4':'Blue','5':'Pink','6':'Purple','1':'Black'}
+act_legend = {'S':'Sitting','D':'Standing','W':'Walking','R':'Stairs','J':'Jogging','L':'LyingDown','g':'gap'}
+act_color = {'S':'Red','D':'Green','W':'Brown','R':'Blue','J':'Pink','L':'Purple','g':'Black'}
 f = open(args.pat_file,'r')
 q = 0
+plt.figure()
 for line in f:
     contents = line.split(' ')
     pat = contents[0]
@@ -31,15 +32,15 @@ for line in f:
     for i,row in df.iterrows():
         x.append(row['times'])
         x.append(row['timee'])
-        y.append(row['act'])
-        y.append(row['act'])
+        y.append(10-q)
+        y.append(10-q)
         colors.append(row['color'])
         colors.append(row['color'])
-        lines.append(([i+1,i+2],[row['act'],row['act']],row['color']))
-    plt.figure()
+        lines.append(([i+1,i+2],[10-q, 10-q],row['color']))
     plt.scatter(x,y, color=colors)
     for line in lines:
         print line
         plt.plot(line[0], line[1], line[2])
-    plt.savefig(args.pat_file+'_plot'+str(q)+'.png',format='png',dpi=1200)
     q += 1
+plt.savefig(args.pat_file+'_plot.png',format='png',dpi=1200)
+    #q += 1

@@ -160,7 +160,7 @@ for usr in users:
         key_count = key_counts.most_common()
         for (key,val) in key_count:
             if (val*100)/tot_seqs :
-                prop_counts.append([key,val*100.0/tot_seqs,seq_time[key]])
+                prop_counts.append([key,val*100.0/tot_seqs,seq_time[key], val, tot_seqs])
     prop_counts = sorted(prop_counts, key=lambda x: x[1], reverse=True)
     #chunk_size = len(prop_counts)/6
     #final_props = []
@@ -172,14 +172,14 @@ for usr in users:
             #print "eval for ",p
     #        if all([p not in s for s in [s for s in patts if s!=p]]):
     #            final_props.append(prop_counts[i])
-    for seq, prop, time in prop_counts:
+    for seq, prop, time, num, deno in prop_counts:
         times = [time[0]]
         for t in time:
             if (t not in times) and (all(t+timedelta(minutes=i) not in times for i in range(5))) and all(t-timedelta(minutes=i) not in times for i in range(5)):
                 times.append(t)
                 print type(t)
         times = [datetime.time(ti).strftime("%H:%M:%S") for ti in times]
-        text = str(seq)+' '+str(prop)+' '+str(times)+'\n'
+        text = str(seq)+' '+str(prop)+' '+str(times)+' '+str(num)+' '+str(deno)+'\n'
         f.write(text)
     f.close()
     #for pair in final_props[:30]:
