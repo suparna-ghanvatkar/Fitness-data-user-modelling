@@ -58,6 +58,7 @@ for act,i in act_legend.iteritems():
 act_to_sed = {'0':'0','1':'0','3':'0','4':'1','5':'1'}
 #act_legend = {x: act_legend[x] for x in act_legend if act_legend[x] not in ['gap','unknown']}
 users = analysis.user.unique()
+users = [2]
 rand_nos = 0
 tot_nos = 0
 for usr in users:
@@ -84,6 +85,7 @@ for usr in users:
             row = act_seq.iloc[0]
             row_i = 0
             end = act_seq.iloc[-1]['end']
+            print start_time,end
             if end-start_time >timedelta(minutes=30):
                 if start_time.time()<time(hour =7):
                     if end.time()<time(hour=7):
@@ -140,7 +142,7 @@ for usr in users:
     print key_counts, key_count
     '''
     seq_time = {}
-    for k in range(25,4,-1):
+    for k in range(25,4,-2):
         key_counts = Counter()
         tot_seqs = 0
         for i, seq in enumerate(acts):

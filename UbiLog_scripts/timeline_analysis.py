@@ -56,7 +56,7 @@ for usr in users:
                 long_seq_data = seq_data
         day_act['start'] = [d.time() for d in day_act['start']]
         day_act['end'] = [d.time() for d in day_act['end']]
-        plot_timeline(day_act,str(usr)+'_'+str(date)+'.svg')
+        #plot_timeline(day_act,str(usr)+'_'+str(date)+'.svg')
     act_dur = [timedelta(0)]*len(activities)
     tot_act_dur = [timedelta(0)]*len(activities)
     #print long_seq_data.head()

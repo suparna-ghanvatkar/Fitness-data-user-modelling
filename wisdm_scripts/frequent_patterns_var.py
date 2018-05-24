@@ -136,6 +136,7 @@ for usr in users:
             strt_time = time_all_seq[i]
             substrs = [(seq[i:i+k],strt_time+timedelta(minutes=i)) for i in range(len(seq)-k) if all(not is_subseq(seq[i:i+k],s,strt_time+timedelta(minutes=i)) for s in prop_counts)]
 #            times = [strt_time+timedelta(minute=i) for i in range(len(seq)-k)]
+            print substrs
             times = []
             temp = []
             for sub,time in substrs:
