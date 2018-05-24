@@ -20,3 +20,5 @@ sequenceminer\.egg-info/
 *.png
 *_back
 *.pdf
+
+paper/
