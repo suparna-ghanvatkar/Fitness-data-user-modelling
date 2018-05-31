@@ -19,27 +19,32 @@ dateparse = lambda x: pd.datetime.strptime(x, "%d-%m-%y %H:%M:%S")
 
 usr_ids = [o for o in os.listdir(args.data_dir)]
 for u in usr_ids:
+    print "user", u
     udata = pd.DataFrame()
-    udir = os.path.join(args.data_dir, o)
+    udir = os.path.join(args.data_dir, u)
     files = [os.path.join(udir,f) for f in os.listdir(udir)]
     for f in files:
-        day_dat = pd.read_csv(f)
+        print f
+        day_dat = pd.read_csv(f, parse_dates=['attr_time'])
+        print "csv fin"
+        day_dat = day_dat[day_dat.label_posture!='unknown']
         day_dat['attr_time'] = day_dat['attr_time'].dt.to_pydatetime()
-        day_data = day_dat['attr_time','label_posture']
+        day_data = day_dat[['attr_time','label_posture']]
 
-        udata = pd.concat([udata,day_dat])
+        udata = pd.concat([udata,day_data])
     udata['user'] = int(u)
     act_data = pd.concat([act_data,udata])
-
+act_data.to_csv('dailoylogconcat.csv',index=False)
 '''
 Act data has user, time and label posture..create this into start end activity user type of data
 '''
+print "creating act data"
 activity_data = []
 act_data = act_data[act_data.label_posture!='unknown']
-first_row = act_data[0]
+first_row = act_data.iloc[0]
 prev_usr = first_row['user']
 prev_date = first_row['attr_time'].date()
-prev_start = first_row['attr_time'].time()
+prev_start = first_row['attr_time']
 prev_time = prev_start
 prev_act = first_row['label_posture']
 for index,row in act_data.iterrows():
